@@ -206,6 +206,30 @@ paths:
                     type: string
                     example: "Размер страницы должен быть от 1 до 100"
                 
+  /applicant/admission/{admissionId}:
+    get:
+      tags: [Applicant]
+      summary: Получить заявку по ID
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      responses:
+        "200":
+          description: Заявка найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "404":
+          description: Заявка не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Заявка не найдена"
+
   /manager/admissions/{admissionId}/assign:
     post:
       tags: [Manager]

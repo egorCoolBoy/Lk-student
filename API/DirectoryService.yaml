@@ -325,6 +325,40 @@ paths:
                 $ref: '#/components/schemas/ResponseModel'
       security:
         - Basic: []
+  /api/dictionary/import:
+    post:
+      tags:
+        - Dictionary
+      summary: Импорт
+      description: |
+        Выполняет 4 GET запроса к внешней системе
+      responses:
+        '200':
+          description: Импорт выполнен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: object
+                    properties:
+                      education_levels:
+                        type: integer
+                      document_types:
+                        type: integer
+                      faculties:
+                        type: integer
+                      programs:
+                        type: integer
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
 
 components:
   schemas:
