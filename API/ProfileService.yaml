@@ -1,0 +1,981 @@
+openapi: 3.0.1
+info:
+  title: ProfileService API
+  version: 1.0.0
+servers:
+  - url: https://localhost:5001
+tags:
+  - name: Profile
+  - name: Passport
+  - name: Education
+  
+paths:
+
+  /api/Profile/{userId}:
+    get:
+      tags:
+        - Profile
+      summary: Получить профиль абитуриента
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Профиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileNotFoundError'
+  
+  /api/Profile/user/{userId}:
+    put:
+      tags:
+        - Profile
+      summary: Обновить личные данные абитуриента
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Профиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileNotFoundError'
+  
+
+  /api/Documents/passport/user/{userId}:
+    get:
+      tags:
+        - Passport
+      summary: Получить паспорт абитуриента
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Паспорт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/passport/user/{userId}/upload:
+    post:
+      tags:
+        - Passport
+      summary: Загрузить паспорт с возможностью добавления нескольких сканов
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PassportUploadRequest'
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      items:
+                        type: string
+                        format: binary
+                      description: Массив сканов паспорта 
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidFileFormatError'
+                  - $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Абитуриент не найден
+        '409':
+          description: Паспорт уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentAlreadyExistsError'
+  
+  /api/Documents/passport/{documentId}:
+    put:
+      tags:
+        - Passport
+      summary: Редактировать данные паспорта
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassportRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Паспорт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/passport/{documentId}/scans:
+    get:
+      tags:
+        - Passport
+      summary: Получить список всех сканов паспорта
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScanInfo'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Паспорт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/passport/add/{documentId}/scans:
+    post:
+      tags:
+        - Passport
+      summary: Добавить новый скан к паспорту
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Скан паспорта
+                description:
+                  type: string
+                  description: Описание скана (например, "Разворот с фото", "Прописка")
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanInfo'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidFileFormatError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Паспорт не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/passport/{documentId}/scans/{scanId}:
+    get:
+      tags:
+        - Passport
+      summary: Скачать конкретный скан паспорта
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID скана
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Скан не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanNotFoundError'
+  
+  /api/Documents/passport/del/{documentId}/scans/{scanId}:
+    delete:
+      tags:
+        - Passport
+      summary: Удалить конкретный скан паспорта
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID скана
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Скан не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanNotFoundError'
+  
+  /api/Documents/education/user/{userId}:
+    get:
+      tags:
+        - Education
+      summary: Получить документ об образовании абитуриента
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Документ об образовании не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/education/user/{userId}/upload:
+    post:
+      tags:
+        - Education
+      summary: Загрузить документ об образовании с возможностью добавления нескольких сканов
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID абитуриента
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EducationUploadRequest'
+                - type: object
+                  properties:
+                    files:
+                      type: array
+                      items:
+                        type: string
+                        format: binary
+                      description: Массив сканов документа 
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidFileFormatError'
+                  - $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Абитуриент не найден
+        '409':
+          description: Документ об образовании уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentAlreadyExistsError'
+  
+  /api/Documents/education/{documentId}:
+    put:
+      tags:
+        - Education
+      summary: Редактировать данные документа об образовании
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEducationDocumentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Документ не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+
+  /api/Documents/education/{documentId}/scans:
+    get:
+      tags:
+        - Education
+      summary: Получить список всех сканов документа об образовании
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScanInfo'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Документ не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/education/add/{documentId}/scans:
+    post:
+      tags:
+        - Education
+      summary: Добавить новый скан к документу об образовании
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Скан документа
+                description:
+                  type: string
+                  description: Описание скана (например, "Диплом", "Приложение")
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanInfo'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidFileFormatError'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Документ не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentNotFoundError'
+  
+  /api/Documents/education/{documentId}/scans/{scanId}:
+    get:
+      tags:
+        - Education
+      summary: Скачать конкретный скан документа об образовании
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID скана
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Скан не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanNotFoundError'
+  
+  /api/Documents/education/del/{documentId}/scans/{scanId}:
+    delete:
+      tags:
+        - Education
+      summary: Удалить конкретный скан документа об образовании
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID документа
+        - name: scanId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID скана
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Не авторизован
+        '403':
+          description: Доступ запрещен
+        '404':
+          description: Скан не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanNotFoundError'
+
+components:
+  schemas:
+    ProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        patronymic:
+          type: string
+        phoneNumber:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [Male, Female]
+        citizenship:
+          type: string
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        patronymic:
+          type: string
+        phoneNumber:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [Male, Female]
+        citizenship:
+          type: string
+    
+    ScanInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+        contentType:
+          type: string
+        description:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+    
+    PassportUploadRequest:
+      type: object
+      required:
+        - series
+        - number
+        - issueDate
+        - issuedBy
+        - departmentCode
+      properties:
+        series:
+          type: string
+          description: Серия паспорта
+        number:
+          type: string
+          description: Номер паспорта
+        issueDate:
+          type: string
+          format: date
+          description: Дата выдачи
+        issuedBy:
+          type: string
+          description: Кем выдан
+        departmentCode:
+          type: string
+          description: Код подразделения
+    
+    PassportResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        series:
+          type: string
+        number:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        issuedBy:
+          type: string
+        departmentCode:
+          type: string
+        scans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScanInfo'
+          description: Список всех сканов паспорта
+        verified:
+          type: boolean
+        verificationComment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    UpdatePassportRequest:
+      type: object
+      properties:
+        series:
+          type: string
+        number:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        issuedBy:
+          type: string
+        departmentCode:
+          type: string
+    
+    EducationUploadRequest:
+      type: object
+      required:
+        - series
+        - number
+        - issueDate
+        - issuedBy
+        - qualification
+        - speciality
+      properties:
+        series:
+          type: string
+          description: Серия документа
+        number:
+          type: string
+          description: Номер документа
+        issueDate:
+          type: string
+          format: date
+          description: Дата выдачи
+        issuedBy:
+          type: string
+          description: Кем выдан (название учебного заведения)
+        registrationNumber:
+          type: string
+          description: Регистрационный номер
+        qualification:
+          type: string
+          enum: [Bachelor, Specialist, Master, PhD, SecondaryEducation]
+          description: Уровень образования/квалификация
+        speciality:
+          type: string
+          description: Специальность/направление
+        honours:
+          type: boolean
+          description: С отличием
+    
+    EducationDocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        series:
+          type: string
+        number:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        issuedBy:
+          type: string
+        registrationNumber:
+          type: string
+        qualification:
+          type: string
+          enum: [Bachelor, Specialist, Master, PhD, SecondaryEducation]
+        speciality:
+          type: string
+        honours:
+          type: boolean
+        scans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScanInfo'
+          description: Список всех сканов документа
+        verified:
+          type: boolean
+        verificationComment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    UpdateEducationDocumentRequest:
+      type: object
+      properties:
+        series:
+          type: string
+        number:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        issuedBy:
+          type: string
+        registrationNumber:
+          type: string
+        qualification:
+          type: string
+          enum: [Bachelor, Specialist, Master, PhD, SecondaryEducation]
+        speciality:
+          type: string
+        honours:
+          type: boolean
+    
+    ProfileNotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Профиль абитуриента не найден"
+        userId:
+          type: string
+          format: uuid
+    
+    DocumentNotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Документ не найден"
+        documentId:
+          type: string
+          format: uuid
+    
+    ScanNotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Скан не найден"
+        scanId:
+          type: string
+          format: uuid
+    
+    DocumentAlreadyExistsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Документ такого типа уже существует"
+    
+    InvalidFileFormatError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Недопустимый формат файла"
+    
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Ошибка валидации данных"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string

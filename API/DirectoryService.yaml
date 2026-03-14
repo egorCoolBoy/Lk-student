@@ -1,0 +1,458 @@
+openapi: 3.0.1
+info:
+  title: DictionaryService.API
+  version: '1.0'
+paths:
+  /api/dictionary/education_levels:
+    get:
+      tags:
+        - Dictionary
+      summary: Get a list of education levels
+      responses:
+        '200':
+          description: Education levels list retrieved
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationLevelModel'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationLevelModel'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationLevelModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+  
+  /api/dictionary/education_levels/{id}:
+    get:
+      tags:
+        - Dictionary
+      summary: Get education level by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Education level retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationLevelModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/document_types:
+    get:
+      tags:
+        - Dictionary
+      summary: Get a list of education document types
+      responses:
+        '200':
+          description: Education document types list retrieved
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationDocumentTypeModel'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationDocumentTypeModel'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EducationDocumentTypeModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/document_types/{id}:
+    get:
+      tags:
+        - Dictionary
+      summary: Get document type by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document type retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentTypeModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/faculties:
+    get:
+      tags:
+        - Dictionary
+      summary: Get a list of faculties
+      responses:
+        '200':
+          description: Faculties list retrieved
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyModel'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyModel'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacultyModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/faculties/{id}:
+    get:
+      tags:
+        - Dictionary
+      summary: Get faculty by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Faculty retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/programs:
+    get:
+      tags:
+        - Dictionary
+      summary: Get a list of active education programs
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          style: form
+          schema:
+            maximum: 2147483647
+            minimum: 1
+            type: integer
+            format: int32
+            default: 1
+        - name: size
+          in: query
+          description: required number of elements per page
+          style: form
+          schema:
+            maximum: 2147483647
+            minimum: 1
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        '200':
+          description: Education programs list retrieved
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProgramPagedListModel'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramPagedListModel'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProgramPagedListModel'
+        '400':
+          description: Invalid arguments for filtration/pagination
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+  /api/dictionary/programs/{id}:
+    get:
+      tags:
+        - Dictionary
+      summary: Get education program by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Education program retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationProgramModel'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: InternalServerError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseModel'
+      security:
+        - Basic: []
+
+components:
+  schemas:
+    EducationDocumentTypeModel:
+      required:
+        - createTime
+        - educationLevel
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        createTime:
+          type: string
+          format: date-time
+        name:
+          minLength: 1
+          type: string
+        educationLevel:
+          $ref: '#/components/schemas/EducationLevelModel'
+        nextEducationLevels:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationLevelModel'
+          nullable: true
+      additionalProperties: false
+    EducationLevelModel:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          minLength: 1
+          type: string
+      additionalProperties: false
+    EducationProgramModel:
+      required:
+        - createTime
+        - educationForm
+        - educationLevel
+        - faculty
+        - id
+        - language
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        createTime:
+          type: string
+          format: date-time
+        name:
+          minLength: 1
+          type: string
+        code:
+          type: string
+          nullable: true
+        language:
+          minLength: 1
+          type: string
+        educationForm:
+          minLength: 1
+          type: string
+        faculty:
+          $ref: '#/components/schemas/FacultyModel'
+        educationLevel:
+          $ref: '#/components/schemas/EducationLevelModel'
+      additionalProperties: false
+    FacultyModel:
+      required:
+        - createTime
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        createTime:
+          type: string
+          format: date-time
+        name:
+          minLength: 1
+          type: string
+      additionalProperties: false
+    PageInfoModel:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+        count:
+          type: integer
+          format: int32
+        current:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ProgramPagedListModel:
+      type: object
+      properties:
+        programs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationProgramModel'
+          nullable: true
+        pagination:
+          $ref: '#/components/schemas/PageInfoModel'
+      additionalProperties: false
+    ResponseModel:
+      type: object
+      properties:
+        status:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+      additionalProperties: false
+  securitySchemes:
+    Basic:
+      type: http
+      description: Basic auth added to authorization header
+      scheme: basic
