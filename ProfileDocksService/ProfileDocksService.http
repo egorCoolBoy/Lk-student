@@ -1,0 +1,6 @@
+@ProfileDocksService_HostAddress = http://localhost:5150
+
+GET {{ProfileDocksService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
