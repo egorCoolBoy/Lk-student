@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UsersService.Application.Hash;
+using UsersService.Application.JWT;
 using UsersService.Application.Users.Queries;
 using UsersService.Application.Users.UsersCommands;
 using UsersService.Application.Users.UsersResults;
+using UsersService.Domain;
 using UsersService.Domain.Entities;
 using UsersService.Infrastructure.AppDbContext;
 
@@ -12,11 +14,15 @@ public class UserService : IUsersService
 {
     private readonly AppDbContext _dbContext;
     private readonly IPasswordHash _passwordHasher;
+    private readonly IJwtProvider  _jwtProvider;
+    private readonly IConfiguration _config;
 
-    public UserService(AppDbContext dbContext, IPasswordHash passwordHasher)
+    public UserService(AppDbContext dbContext, IPasswordHash passwordHasher,IJwtProvider  jwtProvider,IConfiguration config)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
+        _jwtProvider = jwtProvider;
+        _config = config;
     }
 
     public async Task<RegisterResult> RegisterAsync(RegisterCommand command)
@@ -39,39 +45,159 @@ public class UserService : IUsersService
             UserId = user.Id
         };
     }
-    public Task<RegisterResult> RegisterManagerAsync(RegisterManagerCommand command)
+    
+    public async Task<RegisterResult> RegisterManagerAsync(RegisterManagerCommand command)
     {
-        throw new NotImplementedException();
+        if (await EmailExists(command.Email))
+        {
+            throw new InvalidOperationException("Email is already exists");
+        }
+        
+        var passwordHash = _passwordHasher.Hash(command.Password);
+
+        if (command.Role == Role.Applicant) 
+            throw new InvalidOperationException("Role is applicant");
+        
+        var user = new User(command.Email,passwordHash,command.Role);
+        
+        await _dbContext.Users.AddAsync(user);
+        await _dbContext.SaveChangesAsync();
+
+        
+        return new RegisterResult
+        {
+            UserId = user.Id
+        };
     }
 
-    public Task<LoginResult> LoginAsync(LoginCommand command)
+    public async Task<LoginResult> LoginAsync(LoginCommand command)
     {
-        throw new NotImplementedException();
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(x => x.Email == command.Email);
+
+        if (user == null)
+            throw new InvalidOperationException("Invalid credentials");
+
+        if (!_passwordHasher.Verify(command.Password, user.HashedPassword))
+            throw new InvalidOperationException("Invalid credentials");
+
+        var accessToken = _jwtProvider.GenerateAccessToken(user);
+        var refreshToken = _jwtProvider.GenerateRefreshToken();
+
+        var refresh = new RefreshToken
+        (
+            refreshToken,
+            user.Id,
+            DateTime.UtcNow.AddDays(_config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"))
+        );
+
+        _dbContext.RefreshTokens.Add(refresh);
+        await _dbContext.SaveChangesAsync();
+
+        return new LoginResult
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
+    }
+    
+    public async Task LogoutAsync(LogoutCommand command)
+    {
+        var token = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(x => x.Token == command.RefreshToken);
+
+        if (token == null)
+            return;
+
+        token.Revoke();
+
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Task<RefreshTokenResult> RefreshTokenAsync(RefreshTokenCommand command)
+    public async Task<RefreshTokenResult> RefreshTokenAsync(RefreshTokenCommand command)
     {
-        throw new NotImplementedException();
+        var storedToken = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(x => x.Token == command.RefreshToken);
+
+        if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
+            throw new InvalidOperationException("Invalid refresh token");
+
+        var user = await _dbContext.Users.FindAsync(storedToken.UserId);
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+
+        var newAccessToken = _jwtProvider.GenerateAccessToken(user);
+
+        return new RefreshTokenResult
+        {
+            AccessToken = newAccessToken
+        };
     }
 
-    public Task ChangePasswordAsync(ChangePasswordCommand command)
+    public async Task ChangePasswordAsync(ChangePasswordCommand command)
     {
-        throw new NotImplementedException();
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == command.UserId);
+
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+
+        if (!_passwordHasher.Verify(command.CurrentPassword, user.HashedPassword))
+            throw new InvalidOperationException("Invalid password");
+        
+        user.ChangeHashedPassword(
+            _passwordHasher.Hash(command.NewPassword)
+        );
+
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Task ChangeEmailAsync(ChangeEmailCommand command)
+    public async Task ChangeEmailAsync(ChangeEmailCommand command)
     {
-        throw new NotImplementedException();
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == command.UserId);
+
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+
+        if (!_passwordHasher.Verify(command.Password, user.HashedPassword))
+            throw new InvalidOperationException("Invalid password");
+
+        if (await _dbContext.Users.AnyAsync(x => x.Email == command.NewEmail))
+            throw new InvalidOperationException("Email already taken");
+        
+        user.ChangeEmail(command.NewEmail);
+
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Task<GetMeResult> GetMeAsync(GetMeQuery query)
+    public async Task<GetMeResult> GetMeAsync(GetMeQuery query)
     {
-        throw new NotImplementedException();
+        var user = await _dbContext.Users.FindAsync(query.UserId);
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+
+        return new GetMeResult
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role
+        };
     }
 
-    public Task<GetEmailsResult> GetEmails(GetEmailsQuery query)
+    public async Task<GetEmailsResult> GetEmails(GetEmailsQuery query)
     {
-        throw new NotImplementedException();
+        var users = await _dbContext.Users
+            .Where(u => query.Ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.Email })
+            .ToListAsync();
+        if (users.Count == 0)
+            throw new InvalidOperationException("Users not found");
+
+        return new GetEmailsResult
+        {
+            Emails = users.ToDictionary(x => x.Id, x => x.Email)
+        };
     }
     
     

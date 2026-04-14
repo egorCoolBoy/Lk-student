@@ -1,10 +1,12 @@
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using UsersService.Infrastructure.AppDbContext;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.IdentityModel.Tokens;
 using UsersService;
 using UsersService.Application.Hash;
-using UsersService.Application.Users;
+using UsersService.Application.JWT;
 using UsersService.Infrastructure.Hash;
 using UsersService.Presentation.ExceptionMiddleware;
 using UsersService.Presentation.Validators;
@@ -18,6 +20,25 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>()
 
 builder.Services.AddScoped<IUsersService, UserService >();
 builder.Services.AddScoped<IPasswordHash, PasswordHash>();
+builder.Services.AddScoped<IJwtProvider, JwtProvider>();
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])
+            )
+        };
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -35,6 +56,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

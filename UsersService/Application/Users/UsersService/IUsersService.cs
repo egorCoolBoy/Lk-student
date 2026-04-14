@@ -10,6 +10,7 @@ public interface IUsersService
     public Task<RegisterResult> RegisterManagerAsync(RegisterManagerCommand command);
 
     public Task<LoginResult> LoginAsync(LoginCommand command);
+    public Task LogoutAsync(LogoutCommand command);
 
     public Task<RefreshTokenResult> RefreshTokenAsync(RefreshTokenCommand command);
 
