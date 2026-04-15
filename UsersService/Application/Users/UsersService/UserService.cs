@@ -54,9 +54,6 @@ public class UserService : IUsersService
         }
         
         var passwordHash = _passwordHasher.Hash(command.Password);
-
-        if (command.Role == Role.Applicant) 
-            throw new InvalidOperationException("Role is applicant");
         
         var user = new User(command.Email,passwordHash,command.Role);
         
@@ -96,6 +93,9 @@ public class UserService : IUsersService
 
         return new LoginResult
         {
+            UserId = user.Id,
+            Email = user.Email,
+            Role = user.Role,
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
@@ -125,12 +125,26 @@ public class UserService : IUsersService
         var user = await _dbContext.Users.FindAsync(storedToken.UserId);
         if (user == null)
             throw new InvalidOperationException("User not found");
-
+        
         var newAccessToken = _jwtProvider.GenerateAccessToken(user);
+        var newRefreshToken = _jwtProvider.GenerateRefreshToken();
+        
+        storedToken.Revoke();
+        var refreshToken = new RefreshToken
+        (
+            newRefreshToken,
+            user.Id,
+            DateTime.UtcNow.AddDays(_config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"))
+        );
+        
+        _dbContext.RefreshTokens.Add(refreshToken);
+            
+        await _dbContext.SaveChangesAsync();
 
         return new RefreshTokenResult
         {
-            AccessToken = newAccessToken
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken
         };
     }
 
@@ -199,6 +213,7 @@ public class UserService : IUsersService
             Emails = users.ToDictionary(x => x.Id, x => x.Email)
         };
     }
+    
     
     
     private async Task<bool> EmailExists(string email)
