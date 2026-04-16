@@ -12,4 +12,26 @@ public class AppDbContext : DbContext
     public DbSet<Faculty> Faculties { get; set; } 
     public DbSet<DirectoryService.Domain.Entities.Program> Programs { get; set; }  
     public DbSet<EducationDocument>EducationDocuments { get; set; }
+    public DbSet<ImportedDirectroriesStatistic> DirectoryImportStatistics { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<EducationDocumentNextLevel>()
+            .HasKey(x => new { x.EducationDocumentId, x.EducationLevelId });
+
+        modelBuilder.Entity<ImportedDirectroriesStatistic>()
+            .OwnsOne(x => x.Imported);
+
+        modelBuilder.Entity<EducationDocumentNextLevel>()
+            .HasOne(x => x.EducationDocument)
+            .WithMany(x => x.NextLevels)
+            .HasForeignKey(x => x.EducationDocumentId);
+
+        modelBuilder.Entity<EducationDocumentNextLevel>()
+            .HasOne(x => x.EducationLevel)
+            .WithMany(x => x.DocumentLinks)
+            .HasForeignKey(x => x.EducationLevelId);
+    }
 }

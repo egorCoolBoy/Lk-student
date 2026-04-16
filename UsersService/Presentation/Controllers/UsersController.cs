@@ -43,7 +43,7 @@ public class UsersController : ControllerBase
         return Ok(responce);
 
     }
-    
+    [Authorize(Roles = "Admin")]
     [HttpPost("register/manager")]
     public async Task<IActionResult> Post(RegisterManagerRequest request)
     {
@@ -79,7 +79,7 @@ public class UsersController : ControllerBase
         Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = false,
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(30)
         });
@@ -112,7 +112,7 @@ public class UsersController : ControllerBase
         return Ok();
     }
     
-    
+    [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {
@@ -127,7 +127,7 @@ public class UsersController : ControllerBase
 
         return NoContent();
     }
-    
+    [Authorize]
     [HttpPost("change-email")]
     public async Task<IActionResult> ChangeEmail(ChangeEmailRequest request)
     {

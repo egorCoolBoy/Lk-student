@@ -2,9 +2,10 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using UsersService.Application.JWT;
 using UsersService.Domain.Entities;
 
-namespace UsersService.Application.JWT;
+namespace UsersService.Infrastructure;
 
 public class JwtProvider : IJwtProvider
 {
