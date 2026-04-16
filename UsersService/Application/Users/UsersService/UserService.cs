@@ -31,6 +31,8 @@ public class UserService : IUsersService
         {
             throw new InvalidOperationException("Email is already exists");
         }
+        if (command.Role==Role.Admin)
+            throw new InvalidOperationException("Admin role is already registered");
         
         var passwordHash = _passwordHasher.Hash(command.Password);
         

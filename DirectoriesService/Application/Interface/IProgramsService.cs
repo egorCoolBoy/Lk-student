@@ -4,6 +4,6 @@ namespace DirectoryService.Application.Interface;
 
 public interface IProgramsService
 {
-    public Task<List<ProgramDto>> GetProgramsAsync();
-    public Task<ProgramDto> GetProgramByIdAsync(int id);
+    public Task<ProgramsResponseDto> GetProgramsAsync(int page, int size);
+    public Task<ProgramDto> GetProgramByIdAsync(Guid id);
 }
