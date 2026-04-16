@@ -33,5 +33,9 @@ public class AppDbContext : DbContext
             .HasOne(x => x.EducationLevel)
             .WithMany(x => x.DocumentLinks)
             .HasForeignKey(x => x.EducationLevelId);
+        
+        modelBuilder.Entity<EducationLevel>()
+            .Property(x => x.Id)
+            .ValueGeneratedNever();
     }
 }
