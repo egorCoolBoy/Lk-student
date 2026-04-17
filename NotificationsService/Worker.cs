@@ -1,24 +1,25 @@
-namespace NotificationsService;
+using NotificationsService.EmailService;
 
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
+    private readonly IEmailService _emailService;
 
-    public Worker(ILogger<Worker> logger)
+    public Worker(ILogger<Worker> logger, IEmailService emailService)
     {
         _logger = logger;
+        _emailService = emailService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _emailService.SendRegistrationEmailAsync(
+            "ega02022007@gmail.com");
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (_logger.IsEnabled(LogLevel.Information))
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-
-            await Task.Delay(1000, stoppingToken);
+            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            await Task.Delay(10000, stoppingToken);
         }
     }
 }
