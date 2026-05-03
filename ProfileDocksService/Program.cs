@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Infrastructure.AppDbContext;
 using ProfileDocksService.Presentation.Policy.CanView;
+using UsersService.Presentation.ExceptionMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "dtxCKDDWIFw=",
+  "dgSpecHash": "cTL4bHC4BfQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\ega02\\RiderProjects\\LkStudenta\\ProfileDocksService\\ProfileDocksService.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\ega02\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
     "C:\\Users\\ega02\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\ega02\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
     "C:\\Users\\ega02\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
