@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ProfileDocksService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d53714b3625edbd2aa40fcdb6f216811c2361707")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2bfed43c180ec2bfb5b5987d6d5eccc579af3a0b")]
 [assembly: System.Reflection.AssemblyProductAttribute("ProfileDocksService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ProfileDocksService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

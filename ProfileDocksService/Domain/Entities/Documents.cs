@@ -1,0 +1,185 @@
+﻿using ProfileDocksService.Domain.Enums;
+
+namespace ProfileDocksService.Domain.Entities;
+
+public class EducationDocument
+{
+    public Guid Id { get; private set; }
+    public Guid UserId { get; private set; }
+
+    public string InstitutionName { get; private set; }
+    public EducationLevel Level { get; private set; }
+    public string Specialty { get; private set; }
+    public DateOnly GraduationDate { get; private set; }
+    public string DiplomaNumber { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+
+    private readonly List<EducationScan> _scans = [];
+    public IReadOnlyCollection<EducationScan> Scans => _scans;
+
+    private EducationDocument() { } 
+
+    public EducationDocument(
+        Guid userId,
+        string institutionName,
+        EducationLevel level,
+        string specialty,
+        DateOnly graduationDate,
+        string diplomaNumber)
+    {
+        Id = Guid.NewGuid();
+
+        UserId = userId;
+        InstitutionName = institutionName;
+        Level = level;
+        Specialty = specialty;
+        GraduationDate = graduationDate;
+        DiplomaNumber = diplomaNumber;
+
+        CreatedAt = DateTime.UtcNow;
+    }
+    
+    public void UpdateDetails(
+        string institutionName,
+        string specialty,
+        DateOnly graduationDate,
+        string diplomaNumber, EducationLevel level)
+    {
+        InstitutionName = institutionName;
+        Specialty = specialty;
+        GraduationDate = graduationDate;
+        DiplomaNumber = diplomaNumber;
+        Level = level;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public EducationScan AddScan(
+        string storageKey,
+        string originalFilename,
+        string? mimeType,
+        long fileSize)
+    {
+        var scan = new EducationScan
+        {
+            Id = Guid.NewGuid(),
+            EducationDocumentId = Id,
+            StorageKey = storageKey,
+            OriginalFilename = originalFilename,
+            MimeType = mimeType,
+            FileSize = fileSize,
+            UploadedAt = DateTime.UtcNow,
+            EducationDocument = this
+        };
+
+        _scans.Add(scan);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return scan;
+    }
+
+    public void RemoveScan(Guid scanId)
+    {
+        var scan = _scans.FirstOrDefault(x => x.Id == scanId);
+
+        if (scan is null)
+            throw new KeyNotFoundException("Scan not found");
+
+        _scans.Remove(scan);
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+}
+
+public class PassportDocument
+{
+    public Guid Id { get; private set; }
+    public Guid UserId { get; private set; }
+
+    public string? Series { get; private set; }
+    public string? Number { get; private set; }
+    public string? IssuedBy { get; private set; }
+    public DateOnly? IssuedDate { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+
+    private readonly List<PassportScan> _scans = [];
+    public IReadOnlyCollection<PassportScan> Scans => _scans;
+
+    private PassportDocument() { }
+
+    public PassportDocument(
+        Guid userId,
+        string? series,
+        string? number,
+        string? issuedBy,
+        DateOnly? issuedDate)
+    {
+        Id = Guid.NewGuid();
+
+        UserId = userId;
+
+        Series = series;
+        Number = number;
+        IssuedBy = issuedBy;
+        IssuedDate = issuedDate;
+
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(
+        string? series,
+        string? number,
+        string? issuedBy,
+        DateOnly? issuedDate)
+    {
+        Series = series;
+        Number = number;
+        IssuedBy = issuedBy;
+        IssuedDate = issuedDate;
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public PassportScan AddScan(
+        string storageKey,
+        string originalFilename,
+        string? mimeType,
+        long fileSize)
+    {
+        var scan = new PassportScan
+        {
+            Id = Guid.NewGuid(),
+            PassportDocumentId = Id,
+
+            StorageKey = storageKey,
+            OriginalFilename = originalFilename,
+            MimeType = mimeType,
+            FileSize = fileSize,
+
+            UploadedAt = DateTime.UtcNow,
+            PassportDocument = this
+        };
+
+        _scans.Add(scan);
+
+        UpdatedAt = DateTime.UtcNow;
+
+        return scan;
+    }
+
+    public void RemoveScan(Guid scanId)
+    {
+        var scan = _scans.FirstOrDefault(x => x.Id == scanId);
+
+        if (scan is null)
+            throw new KeyNotFoundException("Scan not found");
+
+        _scans.Remove(scan);
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+}

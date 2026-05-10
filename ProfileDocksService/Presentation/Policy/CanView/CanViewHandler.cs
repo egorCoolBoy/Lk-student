@@ -9,9 +9,8 @@ public class CanViewHandler : AuthorizationHandler<CanViewRequirement>
         AuthorizationHandlerContext context,
         CanViewRequirement requirement)
     {
-        var userId = Guid.Parse(
-            context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
+        var userId = Guid.Parse(context.User.FindFirst("sub")?.Value);
+        
         var role = context.User.FindFirst(ClaimTypes.Role)!.Value;
 
         var httpContext = context.Resource as HttpContext;
