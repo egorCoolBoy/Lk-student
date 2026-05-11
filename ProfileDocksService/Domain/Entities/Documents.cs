@@ -16,7 +16,7 @@ public class EducationDocument
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
-    private readonly List<EducationScan> _scans = [];
+    private readonly List<EducationScan> _scans = new();
     public IReadOnlyCollection<EducationScan> Scans => _scans;
 
     private EducationDocument() { } 
@@ -42,17 +42,46 @@ public class EducationDocument
     }
     
     public void UpdateDetails(
-        string institutionName,
-        string specialty,
-        DateOnly graduationDate,
-        string diplomaNumber, EducationLevel level)
+        string? institutionName = null,
+        string? specialty = null,
+        DateOnly? graduationDate = null,
+        string? diplomaNumber = null,
+        EducationLevel? level = null)
     {
-        InstitutionName = institutionName;
-        Specialty = specialty;
-        GraduationDate = graduationDate;
-        DiplomaNumber = diplomaNumber;
-        Level = level;
-        UpdatedAt = DateTime.UtcNow;
+        var changed = false;
+
+        if (!string.IsNullOrWhiteSpace(institutionName) && institutionName != InstitutionName)
+        {
+            InstitutionName = institutionName;
+            changed = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(specialty) && specialty != Specialty)
+        {
+            Specialty = specialty;
+            changed = true;
+        }
+
+        if (graduationDate.HasValue && graduationDate.Value != GraduationDate)
+        {
+            GraduationDate = graduationDate.Value;
+            changed = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(diplomaNumber) && diplomaNumber != DiplomaNumber)
+        {
+            DiplomaNumber = diplomaNumber;
+            changed = true;
+        }
+
+        if (level.HasValue && level.Value != Level)
+        {
+            Level = level.Value;
+            changed = true;
+        }
+
+        if (changed)
+            UpdatedAt = DateTime.UtcNow;
     }
 
     public EducationScan AddScan(
@@ -98,25 +127,25 @@ public class PassportDocument
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
 
-    public string? Series { get; private set; }
-    public string? Number { get; private set; }
-    public string? IssuedBy { get; private set; }
-    public DateOnly? IssuedDate { get; private set; }
+    public string Series { get; private set; }
+    public string Number { get; private set; }
+    public string IssuedBy { get; private set; }
+    public DateOnly IssuedDate { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
-    private readonly List<PassportScan> _scans = [];
+    private readonly List<PassportScan> _scans = new();
     public IReadOnlyCollection<PassportScan> Scans => _scans;
 
     private PassportDocument() { }
 
     public PassportDocument(
         Guid userId,
-        string? series,
-        string? number,
-        string? issuedBy,
-        DateOnly? issuedDate)
+        string series,
+        string number,
+        string issuedBy,
+        DateOnly issuedDate)
     {
         Id = Guid.NewGuid();
 
@@ -131,17 +160,39 @@ public class PassportDocument
     }
 
     public void UpdateDetails(
-        string? series,
-        string? number,
-        string? issuedBy,
-        DateOnly? issuedDate)
+        string? series = null,
+        string? number = null,
+        string? issuedBy = null,
+        DateOnly? issuedDate = null)
     {
-        Series = series;
-        Number = number;
-        IssuedBy = issuedBy;
-        IssuedDate = issuedDate;
+        var changed = false;
 
-        UpdatedAt = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(series) && series != Series)
+        {
+            Series = series;
+            changed = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(number) && number != Number)
+        {
+            Number = number;
+            changed = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(issuedBy) && issuedBy != IssuedBy)
+        {
+            IssuedBy = issuedBy;
+            changed = true;
+        }
+
+        if (issuedDate.HasValue && issuedDate.Value != IssuedDate)
+        {
+            IssuedDate = issuedDate.Value;
+            changed = true;
+        }
+
+        if (changed)
+            UpdatedAt = DateTime.UtcNow;
     }
 
     public PassportScan AddScan(

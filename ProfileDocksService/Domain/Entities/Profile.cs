@@ -1,9 +1,11 @@
-﻿using ProfileDocksService.Domain.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using ProfileDocksService.Domain.Enums;
 
 namespace ProfileDocksService.Domain.Entities;
 
 public class Profile
 {
+    [Key]
     public Guid UserId { get; private set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

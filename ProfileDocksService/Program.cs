@@ -15,9 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IPassportService, PassportService>();
+builder.Services.AddScoped<IEducationService, EducationService>();
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("CanViewProfile", policy =>
+    options.AddPolicy("CanView", policy =>
     {
         policy.Requirements.Add(new CanViewRequirement());
     });
@@ -45,13 +47,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))); 
 var app = builder.Build();
 
-
+app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
