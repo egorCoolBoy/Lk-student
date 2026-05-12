@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
+using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
 namespace ProfileDocksService.Applicantion;
@@ -60,7 +61,7 @@ public class EducationService : IEducationService
     {
         var graduationDate = DateOnly.Parse(dto.GraduationDate);
 
-        var education = new Domain.Entities.EducationDocument(
+        var education = new EducationDocument(
             userId,
             dto.InstitutionName,
             dto.Level,

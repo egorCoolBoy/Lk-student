@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
+using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
 namespace ProfileDocksService.Applicantion;
@@ -58,7 +59,7 @@ public class PassportService : IPassportService
     {
         var issuedDate = DateOnly.Parse(dto.IssuedDate);
 
-        var passport = new Domain.Entities.PassportDocument(
+        var passport = new PassportDocument(
             userId,
             dto.Series,
             dto.Number,
