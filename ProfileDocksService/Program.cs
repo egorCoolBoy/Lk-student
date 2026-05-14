@@ -2,8 +2,12 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProfileDocksService.Applicantion;
+using ProfileDocksService.Applicantion.EducationDocks;
+using ProfileDocksService.Applicantion.EducationScans;
 using ProfileDocksService.Applicantion.FileStorage;
 using ProfileDocksService.Applicantion.Options;
+using ProfileDocksService.Applicantion.PassportDocks;
+using ProfileDocksService.Applicantion.PassportScans;
 using ProfileDocksService.Infrastructure.AppDbContext;
 using ProfileDocksService.Presentation.Policy.CanView;
 using UsersService.Presentation.ExceptionMiddleware;
@@ -20,6 +24,8 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IPassportService, PassportService>();
 builder.Services.AddScoped<IEducationService, EducationService>();
 builder.Services.AddScoped<IFileStorage, FileStorage>();
+builder.Services.AddScoped<IPassportScanService, PassportScanService>();
+builder.Services.AddScoped<IEducationScanService, EducationScanService>();
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("CanView", policy =>

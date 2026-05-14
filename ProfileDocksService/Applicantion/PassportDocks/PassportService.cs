@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
+using ProfileDocksService.Applicantion.FileStorage;
 using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
@@ -8,10 +9,12 @@ namespace ProfileDocksService.Applicantion;
 public class PassportService : IPassportService
 {
     private readonly AppDbContext _db;
+    private readonly IFileStorage _fileStorage;
 
-    public PassportService(AppDbContext db)
+    public PassportService(AppDbContext db,  IFileStorage fileStorage)
     {
         _db = db;
+        _fileStorage = fileStorage;
     }
 
     public async Task<List<GetPassportDto>> GetPassports(Guid userId)
@@ -98,8 +101,7 @@ public class PassportService : IPassportService
             dto.Number,
             dto.IssuedBy,
             issuedDate);
-
-        _db.PassportDocuments.Update(passport);
+        
         await _db.SaveChangesAsync();
 
         return new GetPassportDto
@@ -117,10 +119,17 @@ public class PassportService : IPassportService
 
     public async Task DeletePassport(Guid passportId)
     {
-        var passport = await _db.PassportDocuments.FirstOrDefaultAsync(p => p.Id == passportId);
+        var passport = await _db.PassportDocuments
+            .Include(p => p.Scans)
+            .FirstOrDefaultAsync(p => p.Id == passportId);
 
         if (passport == null)
             throw new KeyNotFoundException($"Passport with id {passportId} not found");
+
+        foreach (var scan in passport.Scans)
+        {
+            await _fileStorage.DeleteAsync(scan.StorageKey);
+        }
 
         _db.PassportDocuments.Remove(passport);
         await _db.SaveChangesAsync();

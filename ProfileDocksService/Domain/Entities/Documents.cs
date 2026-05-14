@@ -83,6 +83,10 @@ public class EducationDocument
         if (changed)
             UpdatedAt = DateTime.UtcNow;
     }
+    public EducationScan? GetScan(Guid scanId)
+    {
+        return _scans.FirstOrDefault(x => x.Id == scanId);
+    }
 
     public EducationScan AddScan(
         string storageKey,
@@ -220,6 +224,10 @@ public class PassportDocument
         UpdatedAt = DateTime.UtcNow;
 
         return scan;
+    }
+    public PassportScan? GetScan(Guid scanId)
+    {
+        return _scans.FirstOrDefault(x => x.Id == scanId);
     }
 
     public void RemoveScan(Guid scanId)

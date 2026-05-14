@@ -10,4 +10,6 @@ public class AppDbContext : DbContext
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<PassportDocument> PassportDocuments { get; set; }
     public DbSet<EducationDocument> EducationDocuments { get; set; }
+    public DbSet<PassportScan> PassportScans { get; set; }
+    public DbSet<EducationScan> EducationScans { get; set; }
 }

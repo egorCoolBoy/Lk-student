@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
+using ProfileDocksService.Applicantion.FileStorage;
 using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
@@ -8,10 +9,12 @@ namespace ProfileDocksService.Applicantion;
 public class EducationService : IEducationService
 {
     private readonly AppDbContext _db;
+    private readonly IFileStorage _fileStorage;
 
-    public EducationService(AppDbContext db)
+    public EducationService(AppDbContext db, IFileStorage fileStorage)
     {
         _db = db;
+        _fileStorage = fileStorage;
     }
 
     public async Task<List<GetEducationDto>> GetEducations(Guid userId)
@@ -103,8 +106,6 @@ public class EducationService : IEducationService
             graduationDate,
             dto.DiplomaNumber,
             dto.Level);
-
-        _db.EducationDocuments.Update(education);
         await _db.SaveChangesAsync();
 
         return new GetEducationDto
@@ -123,10 +124,17 @@ public class EducationService : IEducationService
 
     public async Task DeleteEducation(Guid educationId)
     {
-        var education = await _db.EducationDocuments.FirstOrDefaultAsync(e => e.Id == educationId);
+        var education = await _db.EducationDocuments
+            .Include(e => e.Scans)
+            .FirstOrDefaultAsync(e => e.Id == educationId);
 
         if (education == null)
             throw new KeyNotFoundException($"Education document with id {educationId} not found");
+
+        foreach (var scan in education.Scans)
+        {
+            await _fileStorage.DeleteAsync(scan.StorageKey);
+        }
 
         _db.EducationDocuments.Remove(education);
         await _db.SaveChangesAsync();
