@@ -41,7 +41,7 @@ public class EmailService : IEmailService
         }
         
     }
-    public async Task SendEmailAsync(string toEmail, string subject, string body)
+    private async Task SendEmailAsync(string toEmail, string subject, string body)
     {
         using var client = new SmtpClient(_settings.Host, _settings.Port)
         {

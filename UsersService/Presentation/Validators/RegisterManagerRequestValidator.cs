@@ -18,11 +18,5 @@ public class RegisterManagerRequestValidator : AbstractValidator<RegisterManager
             .Matches(@"^(?=.*[A-Za-z])(?=.*\d).+$")
             .WithMessage("Password must contain at least one letter and one digit");
         
-        RuleFor(x => x.Role)
-            .IsInEnum();
-
-        RuleFor(x => x.Role)
-            .NotEqual(Role.Applicant)
-            .WithMessage("Applicant role is not allowed");
     }
 }

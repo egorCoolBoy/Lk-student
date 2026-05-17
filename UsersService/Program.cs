@@ -1,9 +1,10 @@
 using System.Text;
+using MassTransit.KafkaIntegration;
 using Microsoft.EntityFrameworkCore;
 using UsersService.Infrastructure.AppDbContext;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Identity;
+using MassTransit;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UsersService;
@@ -23,6 +24,26 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
+builder.Services.AddMassTransit(x =>
+{
+    
+    x.AddEntityFrameworkOutbox<AppDbContext>(o =>
+    {
+        o.UsePostgres();
+        o.UseBusOutbox();
+    });
+    
+    x.UsingRabbitMq((context, cfg) =>
+    { 
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+       
+    });
+    
+});
 builder.Services.AddScoped<IUsersService, UserService >();
 builder.Services.AddScoped<IPasswordHash, PasswordHash>();
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();

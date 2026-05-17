@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using UsersService;
 using UsersService.Application.Users.Queries;
 using UsersService.Application.Users.UsersCommands;
+using UsersService.Domain;
 using UsersService.Presentation.DTO;
 using UsersService.Presentation.DTO.ChangeEmail;
 using UsersService.Presentation.DTO.ChangePassword;
@@ -43,7 +44,7 @@ public class UsersController : ControllerBase
         return Ok(responce);
 
     }
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [HttpPost("register/manager")]
     public async Task<IActionResult> Post(RegisterManagerRequest request)
     {
@@ -51,7 +52,7 @@ public class UsersController : ControllerBase
         {
             Email = request.Email,
             Password = request.Password,
-            Role = request.Role
+            Role = Role.Manager
         };
         
         var result = await _usersService.RegisterManagerAsync(command);

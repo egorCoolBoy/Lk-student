@@ -9,6 +9,10 @@
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+        <PackageReference Include="MassTransit" Version="8.3.0" />
+        <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.3.0" />
+        <PackageReference Include="MassTransit.Kafka" Version="8.3.0" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.25">
@@ -22,7 +26,10 @@
 
     <ItemGroup>
       <Folder Include="Application\RefTokens\RefreshTokenResults\" />
-      <Folder Include="Infrastructure\BrokerMessage\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
     </ItemGroup>
 
 </Project>

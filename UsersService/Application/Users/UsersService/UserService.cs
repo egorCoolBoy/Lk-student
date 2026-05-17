@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Contracts;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using UsersService.Application.Hash;
 using UsersService.Application.JWT;
 using UsersService.Application.Users.Queries;
@@ -16,13 +18,19 @@ public class UserService : IUsersService
     private readonly IPasswordHash _passwordHasher;
     private readonly IJwtProvider  _jwtProvider;
     private readonly IConfiguration _config;
+    private readonly IPublishEndpoint _publish;
 
-    public UserService(AppDbContext dbContext, IPasswordHash passwordHasher,IJwtProvider  jwtProvider,IConfiguration config)
+    public UserService(AppDbContext dbContext, 
+        IPasswordHash passwordHasher,
+        IJwtProvider  jwtProvider,
+        IConfiguration config,
+        IPublishEndpoint  publish)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
         _jwtProvider = jwtProvider;
         _config = config;
+        _publish = publish;
     }
 
     public async Task<RegisterResult> RegisterAsync(RegisterCommand command)
@@ -38,6 +46,11 @@ public class UserService : IUsersService
         
         var user = new User(command.Email,passwordHash,command.Role);
         
+        if (user.Role == Role.Applicant)
+        {
+            await _publish.Publish(new ApplicantCreated(){Id = user.Id});
+        }
+        await _publish.Publish(new ApplicantCreated(){Id = user.Id});
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
 
@@ -58,9 +71,15 @@ public class UserService : IUsersService
         var passwordHash = _passwordHasher.Hash(command.Password);
         
         var user = new User(command.Email,passwordHash,command.Role);
-        
+        var message = new ManagerCreated()
+        {
+            Email = user.Email,
+            Id = user.Id
+        };
+        await _publish.Publish(message);
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
+        
 
         
         return new RegisterResult
