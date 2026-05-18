@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
+using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Domain.Enums;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
@@ -13,7 +14,7 @@ public class ProfileService : IProfileService
     {
         _db = db;
     }
-
+    
     public async Task<GetProfileDto> GetProfile(Guid userId)
     {
         var profile = await _db.Profiles
@@ -67,5 +68,14 @@ public class ProfileService : IProfileService
             Citizenship = profile.Citizenship,
             UpdatedAt = profile.UpdatedAt,
         };
+    }
+    
+    public async Task CreateProfile(Guid userId)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync($@"
+        INSERT INTO ""Profiles"" (""UserId"", ""CreatedAt"")
+        VALUES ({userId}, now())
+        ON CONFLICT (""UserId"") DO NOTHING;
+    ");
     }
 }

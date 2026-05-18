@@ -1,4 +1,5 @@
 using System.Text;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProfileDocksService.Applicantion;
@@ -9,6 +10,7 @@ using ProfileDocksService.Applicantion.Options;
 using ProfileDocksService.Applicantion.PassportDocks;
 using ProfileDocksService.Applicantion.PassportScans;
 using ProfileDocksService.Infrastructure.AppDbContext;
+using ProfileDocksService.Infrastructure.Consumers;
 using ProfileDocksService.Presentation.Policy.CanView;
 using UsersService.Presentation.ExceptionMiddleware;
 
@@ -31,6 +33,21 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("CanView", policy =>
     {
         policy.Requirements.Add(new CanViewRequirement());
+    });
+});
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<ApplicantCreatedConsumer>();
+    
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost");
+
+        cfg.ReceiveEndpoint("applicant-created-queue", e =>
+        {
+            e.ConfigureConsumer<ApplicantCreatedConsumer>(context);
+        });
     });
 });
 builder.Services.Configure<MinioOptions>(

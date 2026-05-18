@@ -15,7 +15,7 @@ public class ProfilesControllers : ControllerBase
     {
         _profileService = profileService;
     }
-    [Authorize(Policy = "CanView")]
+    //[Authorize(Policy = "CanView")]
     [HttpGet("profiles/{userId}")]
     public async Task<IActionResult> Getrofile(Guid userId)
     {
