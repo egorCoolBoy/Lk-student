@@ -6,14 +6,16 @@ public class User
     public string Email { get; set; }
     public string HashedPassword { get; set; }
     public Role Role { get; set; }
+    public string? FullName { get; set; }
     public List<RefreshToken> RefreshTokens { get; set; }
 
-    public User(string email, string hashedPassword, Role role)
+    public User(string email, string hashedPassword, Role role,string? fullName = null)
     {
         Id = Guid.NewGuid();
         Email = email;
         HashedPassword = hashedPassword;
         Role = role;
+        FullName = fullName;
     }
 
     public void ChangeEmail(string email)

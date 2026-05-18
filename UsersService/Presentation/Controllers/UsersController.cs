@@ -31,7 +31,8 @@ public class UsersController : ControllerBase
         {
             Email = request.Email,
             Password = request.Password,
-            Role = request.Role
+            Role = request.Role,
+            FullName = request.FullName
         };
         
         var result = await _usersService.RegisterAsync(command);
@@ -52,7 +53,8 @@ public class UsersController : ControllerBase
         {
             Email = request.Email,
             Password = request.Password,
-            Role = Role.Manager
+            Role = Role.Manager,
+            FullName = request.FullName
         };
         
         var result = await _usersService.RegisterManagerAsync(command);
@@ -185,7 +187,8 @@ public class UsersController : ControllerBase
         {
             UserId = result.Id,
             Email = result.Email,
-            Role = result.Role
+            Role = result.Role,
+            FullName = result.FullName
         };
         return Ok(responce);
     }
@@ -205,9 +208,19 @@ public class UsersController : ControllerBase
         };
         return Ok(responce);
     }
-    
-    
-    
+   //[Authorize(Roles="HeadManager")]
+    [HttpGet("Managers")]
+    public async Task<IActionResult> GetManagers()
+    {
+        return Ok(await _usersService.GetManagers());
+    }
+    //[Authorize(Roles = "Admin")]
+    [HttpDelete("Manager/{id}")]
+    public async Task<IActionResult> DeleteManager(Guid id)
+    {
+        await _usersService.RemoveManager(id);
+        return NoContent();
+    }
     private Guid GetUserId()
     {
         var id = User.FindFirst("sub")?.Value;

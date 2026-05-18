@@ -16,15 +16,15 @@ public class UserService : IUsersService
 {
     private readonly AppDbContext _dbContext;
     private readonly IPasswordHash _passwordHasher;
-    private readonly IJwtProvider  _jwtProvider;
+    private readonly IJwtProvider _jwtProvider;
     private readonly IConfiguration _config;
     private readonly IPublishEndpoint _publish;
 
-    public UserService(AppDbContext dbContext, 
+    public UserService(AppDbContext dbContext,
         IPasswordHash passwordHasher,
-        IJwtProvider  jwtProvider,
+        IJwtProvider jwtProvider,
         IConfiguration config,
-        IPublishEndpoint  publish)
+        IPublishEndpoint publish)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
@@ -39,38 +39,44 @@ public class UserService : IUsersService
         {
             throw new InvalidOperationException("Email is already exists");
         }
-        if (command.Role==Role.Admin)
+
+        if (command.Role == Role.Admin)
             throw new InvalidOperationException("Admin role is already registered");
-        
+
         var passwordHash = _passwordHasher.Hash(command.Password);
-        
-        var user = new User(command.Email,passwordHash,command.Role);
-        
+
+        command.FullName = command.Role != Role.Applicant ? command.FullName : null;
+
+        var user = new User(command.Email, passwordHash, command.Role, command.FullName);
+
         if (user.Role == Role.Applicant)
         {
-            await _publish.Publish(new ApplicantCreated(){Id = user.Id});
+            await _publish.Publish(new ApplicantCreated() { Id = user.Id });
         }
-        await _publish.Publish(new ApplicantCreated(){Id = user.Id});
+
+        await _publish.Publish(new ApplicantCreated() { Id = user.Id });
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
 
-        
+
         return new RegisterResult
         {
             UserId = user.Id
         };
     }
-    
+
     public async Task<RegisterResult> RegisterManagerAsync(RegisterManagerCommand command)
     {
         if (await EmailExists(command.Email))
         {
             throw new InvalidOperationException("Email is already exists");
         }
-        
+
+        if (command.Role == Role.Admin || command.Role == Role.Applicant)
+            throw new InvalidOperationException("Invalid Role");
         var passwordHash = _passwordHasher.Hash(command.Password);
-        
-        var user = new User(command.Email,passwordHash,command.Role);
+
+        var user = new User(command.Email, passwordHash, command.Role);
         var message = new ManagerCreated()
         {
             Email = user.Email,
@@ -79,9 +85,9 @@ public class UserService : IUsersService
         await _publish.Publish(message);
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
-        
 
-        
+
+
         return new RegisterResult
         {
             UserId = user.Id
@@ -121,7 +127,7 @@ public class UserService : IUsersService
             RefreshToken = refreshToken
         };
     }
-    
+
     public async Task LogoutAsync(LogoutCommand command)
     {
         var token = await _dbContext.RefreshTokens
@@ -146,10 +152,10 @@ public class UserService : IUsersService
         var user = await _dbContext.Users.FindAsync(storedToken.UserId);
         if (user == null)
             throw new InvalidOperationException("User not found");
-        
+
         var newAccessToken = _jwtProvider.GenerateAccessToken(user);
         var newRefreshToken = _jwtProvider.GenerateRefreshToken();
-        
+
         storedToken.Revoke();
         var refreshToken = new RefreshToken
         (
@@ -157,9 +163,9 @@ public class UserService : IUsersService
             user.Id,
             DateTime.UtcNow.AddDays(_config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"))
         );
-        
+
         _dbContext.RefreshTokens.Add(refreshToken);
-            
+
         await _dbContext.SaveChangesAsync();
 
         return new RefreshTokenResult
@@ -179,7 +185,7 @@ public class UserService : IUsersService
 
         if (!_passwordHasher.Verify(command.CurrentPassword, user.HashedPassword))
             throw new InvalidOperationException("Invalid password");
-        
+
         user.ChangeHashedPassword(
             _passwordHasher.Hash(command.NewPassword)
         );
@@ -200,7 +206,7 @@ public class UserService : IUsersService
 
         if (await _dbContext.Users.AnyAsync(x => x.Email == command.NewEmail))
             throw new InvalidOperationException("Email already taken");
-        
+
         user.ChangeEmail(command.NewEmail);
 
         await _dbContext.SaveChangesAsync();
@@ -216,7 +222,8 @@ public class UserService : IUsersService
         {
             Id = user.Id,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role,
+            FullName = user.FullName
         };
     }
 
@@ -234,7 +241,33 @@ public class UserService : IUsersService
             Emails = users.ToDictionary(x => x.Id, x => x.Email)
         };
     }
+
+    public async Task<List<GetMeResult>> GetManagers()
+    {
+        var managers = await _dbContext.Users.Where(u => u.Role == Role.Manager || u.Role == Role.HeadManager)
+            .Select(u => new GetMeResult
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Role = u.Role,
+                    FullName = u.FullName
+                }
+            ).ToListAsync();
+        return managers;
+    }
     
+    public async Task RemoveManager(Guid id)
+    {
+        var user = await _dbContext.Users.FindAsync(id);
+
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+        if (user.Role == Role.Applicant || user.Role == Role.Admin)
+            throw new InvalidOperationException("You cannot remove the applicant and admin");
+
+        _dbContext.Users.Remove(user);
+        await _dbContext.SaveChangesAsync();
+    }
     
     
     private async Task<bool> EmailExists(string email)

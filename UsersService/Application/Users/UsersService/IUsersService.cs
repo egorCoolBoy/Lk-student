@@ -19,4 +19,7 @@ public interface IUsersService
     public Task ChangeEmailAsync(ChangeEmailCommand command);
     public Task<GetMeResult>  GetMeAsync(GetMeQuery query);
     public Task<GetEmailsResult> GetEmails(GetEmailsQuery query);
+    public Task<List<GetMeResult>> GetManagers();
+    public Task RemoveManager(Guid id);
+
 }
