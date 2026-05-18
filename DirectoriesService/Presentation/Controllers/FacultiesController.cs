@@ -8,19 +8,19 @@ namespace DirectoryService.Presentation.Controllers;
 public class FacultiesController : ControllerBase
 {
     private readonly IFacultiesService _facultiesService;
-
+    
     public FacultiesController(IFacultiesService facultiesService)
     {
         _facultiesService = facultiesService;
     }
-
+    //[Authorize]
     [HttpGet]
     public async Task<IActionResult> GetFaculties()
     {
         var faculties = await _facultiesService.GetFacultiesAsync();
         return Ok(faculties);
     }
-
+    //[Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetFacultyById(Guid id)
     {

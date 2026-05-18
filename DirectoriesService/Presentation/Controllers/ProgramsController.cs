@@ -1,4 +1,6 @@
 ﻿using DirectoryService.Application.Interface;
+using DirectoryService.Presentation.Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.Controllers;
@@ -13,15 +15,15 @@ public class ProgramsController : ControllerBase
     {
         _programsService = programsService;
     }
-
+    //[Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetPrograms([FromQuery] int page = 1, [FromQuery] int size = 10)
+    public async Task<IActionResult> GetPrograms([FromQuery]ProgramsQueryDto query)
     {
-        var programs = await _programsService.GetProgramsAsync(page, size);
+        var programs = await _programsService.GetProgramsAsync(query);
         return Ok(programs);
     }
 
-
+    //[Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProgramById(Guid id)
     {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DirectoryService.Application.Interface;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DirectoryService.Presentation.Controllers;
 
@@ -13,7 +14,7 @@ public class DirectoriesController : ControllerBase
     {
         _directoriesService = directoriesService;
     }
-
+    //[Authorize(Roles = "Admin")]
     [HttpPost("import")]
     public async Task<IActionResult> ImportDirectory()
     {

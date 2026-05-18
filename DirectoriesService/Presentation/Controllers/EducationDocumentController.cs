@@ -13,14 +13,14 @@ public class EducationDocumentController : ControllerBase
     {
         _educationDocumentService = educationDocumentService;
     }
-
+    //[Authorize]
     [HttpGet]
     public async Task<IActionResult> GetEducationDocuments()
     {
         var documents = await _educationDocumentService.GetEducationDocumentsAsync();
         return Ok(documents);
     }
-
+    //[Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetEducationDocumentById(Guid id)
     {

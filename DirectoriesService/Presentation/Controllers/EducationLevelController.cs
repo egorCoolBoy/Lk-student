@@ -13,14 +13,14 @@ public class EducationLevelController : ControllerBase
     {
         _educationLevelService = educationLevelService;
     }
-
+    //[Authorize]
     [HttpGet]
     public async Task<IActionResult> GetEducationLevels()
     {
         var levels = await _educationLevelService.GetEducationLevelsAsync();
         return Ok(levels);
-    }
-
+    }   
+    //[Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetEducationLevelById(int id)
     {
