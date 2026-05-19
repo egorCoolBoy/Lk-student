@@ -1,4 +1,6 @@
-﻿namespace UsersService.Domain.Entities;
+﻿using Contracts;
+
+namespace UsersService.Domain.Entities;
 
 public class User
 {

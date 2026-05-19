@@ -21,5 +21,6 @@ public interface IUsersService
     public Task<GetEmailsResult> GetEmails(GetEmailsQuery query);
     public Task<List<GetMeResult>> GetManagers();
     public Task RemoveManager(Guid id);
+    public Task<GetMeResult> GetManager(Guid id);
 
 }

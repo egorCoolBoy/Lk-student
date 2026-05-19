@@ -18,6 +18,7 @@ public class Admission
     public string? ManagerFullName { get; set; }
     
     public string EducationLevel { get; set; } = null!;
+    public string EducationLevelId { get; set; } = null!;
 
     public int Priority { get; set; }
 

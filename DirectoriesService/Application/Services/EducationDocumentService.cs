@@ -50,8 +50,7 @@ public class EducationDocumentService : IEducationDocumentService
 	{
 		var document = await _context.EducationDocuments
 			.Include(x => x.NextLevels)
-			.ThenInclude(x => x.EducationLevel)
-			.Where(x => x.Id == id)
+			.ThenInclude(x => x.EducationLevel).Where(x=>x.Id == id)
 			.Join(
 				_context.EducationLevels,
 				item => item.EducationLevelId,

@@ -18,4 +18,11 @@ public class DocumentAPI : IDocumentAPI
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<List<EducationDocxDto>>();
     }
+
+    public async Task<GetProfileDto> GetProfileAsync(Guid userId)
+    {
+        var response = await _httpClient.GetAsync($"/api/profile/{userId}");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<GetProfileDto>();
+    }
 }

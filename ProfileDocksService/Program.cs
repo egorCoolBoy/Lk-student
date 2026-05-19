@@ -1,16 +1,20 @@
 using System.Text;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.EducationDocks;
 using ProfileDocksService.Applicantion.EducationScans;
 using ProfileDocksService.Applicantion.FileStorage;
+using ProfileDocksService.Applicantion.Interface;
 using ProfileDocksService.Applicantion.Options;
 using ProfileDocksService.Applicantion.PassportDocks;
 using ProfileDocksService.Applicantion.PassportScans;
 using ProfileDocksService.Infrastructure.AppDbContext;
 using ProfileDocksService.Infrastructure.Consumers;
+using ProfileDocksService.Presentation.Implementations;
+using ProfileDocksService.Presentation.Options;
 using ProfileDocksService.Presentation.Policy.CanView;
 using UsersService.Presentation.ExceptionMiddleware;
 
@@ -28,6 +32,14 @@ builder.Services.AddScoped<IEducationService, EducationService>();
 builder.Services.AddScoped<IFileStorage, FileStorage>();
 builder.Services.AddScoped<IPassportScanService, PassportScanService>();
 builder.Services.AddScoped<IEducationScanService, EducationScanService>();
+
+builder.Services.Configure<DirApi>(builder.Configuration.GetSection("DirApi"));
+builder.Services.AddHttpClient<IDirectoriesAPI,DirectoriesAPI>( (sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<DirApi>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -101,7 +113,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))); 
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionMiddleware>();
+//app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

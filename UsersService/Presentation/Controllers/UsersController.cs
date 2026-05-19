@@ -10,7 +10,7 @@ using UsersService.Presentation.DTO.ChangePassword;
 using UsersService.Presentation.DTO.GetEmails;
 using UsersService.Presentation.DTO.Login;
 using UsersService.Presentation.DTO.RefreshToken;
-
+using Contracts;
 namespace Presentation.Controllers;
 
 [ApiController]
@@ -214,6 +214,13 @@ public class UsersController : ControllerBase
     {
         return Ok(await _usersService.GetManagers());
     }
+
+    [HttpGet("manager/{id}")]
+    public async Task<IActionResult> GetManager(Guid id)
+    {
+        return Ok(await _usersService.GetManager(id));
+    }
+    
     //[Authorize(Roles = "Admin")]
     [HttpDelete("Manager/{id}")]
     public async Task<IActionResult> DeleteManager(Guid id)
@@ -221,6 +228,8 @@ public class UsersController : ControllerBase
         await _usersService.RemoveManager(id);
         return NoContent();
     }
+    
+    
     private Guid GetUserId()
     {
         var id = User.FindFirst("sub")?.Value;

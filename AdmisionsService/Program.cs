@@ -18,9 +18,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IManagerFacultyService, ManagerFacultyService>();
-builder.Services.AddScoped<IDocumentAPI, DocumentAPI>();
-builder.Services.AddScoped<IDirectoriesAPI, DirectoriesAPI>();
 
+builder.Services.Configure<NOptions>(builder.Configuration.GetSection("NOptions"));
 builder.Services.Configure<DocksApi>(builder.Configuration.GetSection("DocksApi"));
 builder.Services.AddHttpClient<IDocumentAPI, DocumentAPI>((sp, client) =>
 {
@@ -32,6 +31,12 @@ builder.Services.Configure<DirApi>(builder.Configuration.GetSection("DirApi"));
 builder.Services.AddHttpClient<IDirectoriesAPI,DirectoriesAPI>( (sp, client) =>
 {
     var options = sp.GetRequiredService<IOptions<DirApi>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+});
+builder.Services.Configure<UsersApi>(builder.Configuration.GetSection("UsersApi"));
+builder.Services.AddHttpClient<IUsersServiceApi, UsersServiceApi>((sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<UsersApi>>().Value;
     client.BaseAddress = new Uri(options.BaseUrl);
 });
 

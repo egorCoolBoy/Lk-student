@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfileDocksService.Applicantion.Dtos;
 using ProfileDocksService.Applicantion.FileStorage;
+using ProfileDocksService.Applicantion.Interface;
 using ProfileDocksService.Domain.Entities;
 using ProfileDocksService.Infrastructure.AppDbContext;
 
@@ -10,11 +11,13 @@ public class EducationService : IEducationService
 {
     private readonly AppDbContext _db;
     private readonly IFileStorage _fileStorage;
+    private readonly IDirectoriesAPI _directoriesAPI;
 
-    public EducationService(AppDbContext db, IFileStorage fileStorage)
+    public EducationService(AppDbContext db, IFileStorage fileStorage, IDirectoriesAPI directoriesAPI)
     {
         _db = db;
         _fileStorage = fileStorage;
+        _directoriesAPI = directoriesAPI;
     }
 
     public async Task<List<GetEducationDto>> GetEducations(Guid userId)
@@ -25,9 +28,11 @@ public class EducationService : IEducationService
             {
                 Id = e.Id,
                 UserId = e.UserId,
-                InstitutionName = e.InstitutionName,
-                Level = e.Level,
+                EducationTypeId = e.EducationTypeId,
+                EducationTypeName = e.EducationName,
+                Level = e.LevelName,
                 Specialty = e.Specialty,
+                LevelId = e.LevelId,
                 GraduationDate = e.GraduationDate,
                 DiplomaNumber = e.DiplomaNumber,
                 CreatedAt = e.CreatedAt,
@@ -44,8 +49,9 @@ public class EducationService : IEducationService
             {
                 Id = e.Id,
                 UserId = e.UserId,
-                InstitutionName = e.InstitutionName,
-                Level = e.Level,
+                EducationTypeId = e.EducationTypeId,
+                EducationTypeName = e.EducationName,
+                Level = e.LevelName,
                 Specialty = e.Specialty,
                 GraduationDate = e.GraduationDate,
                 DiplomaNumber = e.DiplomaNumber,
@@ -63,14 +69,14 @@ public class EducationService : IEducationService
     public async Task<GetEducationDto> CreateEducation(Guid userId, CreateEducationDto dto)
     {
         var graduationDate = DateOnly.Parse(dto.GraduationDate);
+        var educationType = await _directoriesAPI.GetEducationDocumentTypeByIdAsync(dto.EducationTypeId);
 
         var education = new EducationDocument(
             userId,
-            dto.InstitutionName,
-            dto.Level,
+            educationType.EducationLevel.Name,
             dto.Specialty,
             graduationDate,
-            dto.DiplomaNumber);
+            dto.DiplomaNumber,educationType.EducationLevel.Id,educationType.Id,educationType.Name);
 
         _db.EducationDocuments.Add(education);
         await _db.SaveChangesAsync();
@@ -79,8 +85,10 @@ public class EducationService : IEducationService
         {
             Id = education.Id,
             UserId = education.UserId,
-            InstitutionName = education.InstitutionName,
-            Level = education.Level,
+            Level = education.LevelName,
+            LevelId = education.LevelId,
+            EducationTypeId = education.EducationTypeId,
+            EducationTypeName = education.EducationName,
             Specialty = education.Specialty,
             GraduationDate = education.GraduationDate,
             DiplomaNumber = education.DiplomaNumber,
@@ -99,21 +107,23 @@ public class EducationService : IEducationService
         DateOnly? graduationDate = null;
         if (!string.IsNullOrWhiteSpace(dto.GraduationDate))
             graduationDate = DateOnly.Parse(dto.GraduationDate);
-
+        
+        var educationType = await _directoriesAPI.GetEducationDocumentTypeByIdAsync(dto.EducationTypeId);
         education.UpdateDetails(
-            dto.InstitutionName,
             dto.Specialty,
             graduationDate,
             dto.DiplomaNumber,
-            dto.Level);
+            educationType.EducationLevel.Name, educationType.EducationLevel.Id,educationType.Id,educationType.Name);
         await _db.SaveChangesAsync();
 
         return new GetEducationDto
         {
             Id = education.Id,
             UserId = education.UserId,
-            InstitutionName = education.InstitutionName,
-            Level = education.Level,
+            Level = education.LevelName,
+            LevelId = education.LevelId,
+            EducationTypeId = education.EducationTypeId,
+            EducationTypeName = education.EducationName,
             Specialty = education.Specialty,
             GraduationDate = education.GraduationDate,
             DiplomaNumber = education.DiplomaNumber,

@@ -268,6 +268,21 @@ public class UserService : IUsersService
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<GetMeResult> GetManager(Guid id)
+    {
+        var user = await _dbContext.Users.FindAsync(id);
+        if (user == null || user.Role != Role.Manager)
+            throw new InvalidOperationException("Manager not found");
+        var userDto = new GetMeResult
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            FullName = user.FullName
+        };
+        return userDto;
+    }
     
     
     private async Task<bool> EmailExists(string email)

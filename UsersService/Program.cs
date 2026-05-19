@@ -1,4 +1,5 @@
 using System.Text;
+using Contracts;
 using MassTransit.KafkaIntegration;
 using Microsoft.EntityFrameworkCore;
 using UsersService.Infrastructure.AppDbContext;

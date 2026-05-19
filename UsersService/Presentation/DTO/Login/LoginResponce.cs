@@ -1,5 +1,5 @@
 ﻿using UsersService.Domain;
-
+using Contracts;
 namespace UsersService.Presentation.DTO.Login;
 
 public class LoginResponce

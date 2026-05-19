@@ -6,9 +6,10 @@ public class EducationDocument
 {
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
-
-    public string InstitutionName { get; private set; }
-    public EducationLevel Level { get; private set; }
+    public Guid EducationTypeId { get; private set; }
+    public string EducationName { get; set; }
+    public string LevelName { get; private set; }
+    public int LevelId { get; private set; }
     public string Specialty { get; private set; }
     public DateOnly GraduationDate { get; private set; }
     public string DiplomaNumber { get; private set; }
@@ -23,36 +24,39 @@ public class EducationDocument
 
     public EducationDocument(
         Guid userId,
-        string institutionName,
-        EducationLevel level,
+        string level,
         string specialty,
         DateOnly graduationDate,
-        string diplomaNumber)
+        string diplomaNumber,int levelId,Guid educationTypeId,string educationName)
     {
         Id = Guid.NewGuid();
 
         UserId = userId;
-        InstitutionName = institutionName;
-        Level = level;
+        EducationTypeId = educationTypeId;
+        EducationName = educationName;
+        LevelName = level;
         Specialty = specialty;
         GraduationDate = graduationDate;
         DiplomaNumber = diplomaNumber;
-
+        LevelId = levelId;
         CreatedAt = DateTime.UtcNow;
     }
     
     public void UpdateDetails(
-        string? institutionName = null,
         string? specialty = null,
         DateOnly? graduationDate = null,
         string? diplomaNumber = null,
-        EducationLevel? level = null)
+        string? levelName = null, 
+        int? levelId = null, Guid? educationTypeId = null,string? educationName=null)
     {
         var changed = false;
 
-        if (!string.IsNullOrWhiteSpace(institutionName) && institutionName != InstitutionName)
+        if (educationTypeId.HasValue && educationTypeId!=EducationTypeId)
         {
-            InstitutionName = institutionName;
+            EducationName = educationName;
+            EducationTypeId = educationTypeId.Value;
+            LevelName = levelName;
+            LevelId = levelId.Value;
             changed = true;
         }
 
@@ -73,13 +77,6 @@ public class EducationDocument
             DiplomaNumber = diplomaNumber;
             changed = true;
         }
-
-        if (level.HasValue && level.Value != Level)
-        {
-            Level = level.Value;
-            changed = true;
-        }
-
         if (changed)
             UpdatedAt = DateTime.UtcNow;
     }

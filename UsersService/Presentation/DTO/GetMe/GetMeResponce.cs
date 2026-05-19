@@ -1,4 +1,5 @@
-﻿using UsersService.Domain;
+﻿using Contracts;
+using UsersService.Domain;
 
 namespace UsersService.Presentation.DTO;
 

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using UsersService.Presentation.DTO;
+using Contracts;
 
 namespace UsersService.Presentation.Validators;
 

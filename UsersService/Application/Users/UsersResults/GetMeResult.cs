@@ -1,5 +1,5 @@
 ﻿using UsersService.Domain;
-
+using Contracts;
 namespace UsersService.Application.Users.UsersResults;
 
 public class GetMeResult

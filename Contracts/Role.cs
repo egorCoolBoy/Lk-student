@@ -1,4 +1,4 @@
-﻿namespace UsersService.Domain;
+﻿namespace Contracts;
 
 public enum Role
 {

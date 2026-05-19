@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProfileDocksService.Infrastructure.AppDbContext;
@@ -11,9 +12,11 @@ using ProfileDocksService.Infrastructure.AppDbContext;
 namespace ProfileDocksService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519201901_EdLevel")]
+    partial class EdLevel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,15 +38,12 @@ namespace ProfileDocksService.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("EducationName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EducationTypeId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateOnly>("GraduationDate")
                         .HasColumnType("date");
+
+                    b.Property<string>("InstitutionName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("LevelId")
                         .HasColumnType("integer");

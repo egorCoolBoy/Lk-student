@@ -1,5 +1,5 @@
 ﻿using UsersService.Domain;
-
+using Contracts;
 namespace UsersService.Application.Users.UsersCommands;
 
 public class RegisterManagerCommand
