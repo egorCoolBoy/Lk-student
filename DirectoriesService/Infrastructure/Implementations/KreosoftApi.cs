@@ -9,20 +9,10 @@ namespace DirectoryService.Infrastructure.Implementations;
 public class KreosoftApi : IKreosoftApi
 {
     private readonly HttpClient _httpClient;
-    private readonly IConfiguration _config;
-    public KreosoftApi(HttpClient httpClient , IConfiguration config)
-    {
-        _config = config;
-        _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri(_config.GetValue<string>("ExternalApi:BaseUrl"));
-        
-        var password = _config.GetValue<string>("ExternalApi:Password");
-        var login = _config.GetValue<string>("ExternalApi:Login");
-        
-        var credentials = $"{login}:{password}";
-        var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
 
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64);
+    public KreosoftApi(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
     }
 
     public async Task<ProgramsResponseDto> GetPrograms()

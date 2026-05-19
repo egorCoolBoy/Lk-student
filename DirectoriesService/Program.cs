@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using DirectoryService.Application.Interface;
 using DirectoryService.Application.Services;
@@ -15,7 +16,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient<IKreosoftApi, KreosoftApi>()
+builder.Services.AddHttpClient<IKreosoftApi, KreosoftApi>((sp, client) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+
+        client.BaseAddress = new Uri(
+            config["ExternalApi:BaseUrl"]!
+        );
+
+        var login = config["ExternalApi:Login"];
+        var password = config["ExternalApi:Password"];
+
+        var credentials = $"{login}:{password}";
+        var base64 = Convert.ToBase64String(
+            Encoding.UTF8.GetBytes(credentials)
+        );
+
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Basic", base64);
+    })
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
         UseProxy = false
