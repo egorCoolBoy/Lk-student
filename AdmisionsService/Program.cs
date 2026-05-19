@@ -1,8 +1,13 @@
 using System.Text;
+using AdmisionsService.Application.Interfaces;
 using AdmisionsService.Application.ManagerFacultyService;
+using AdmisionsService.Infrastructure;
 using AdmisionsService.Infrastructure.AppDbContext;
+using AdmisionsService.Infrastructure.Implementations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +18,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IManagerFacultyService, ManagerFacultyService>();
+builder.Services.AddScoped<IDocumentAPI, DocumentAPI>();
+builder.Services.AddScoped<IDirectoriesAPI, DirectoriesAPI>();
+
+builder.Services.Configure<DocksApi>(builder.Configuration.GetSection("DocksApi"));
+builder.Services.AddHttpClient<IDocumentAPI, DocumentAPI>((sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<DocksApi>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+});
+
+builder.Services.Configure<DirApi>(builder.Configuration.GetSection("DirApi"));
+builder.Services.AddHttpClient<IDirectoriesAPI,DirectoriesAPI>( (sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<DirApi>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+});
+
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -62,7 +87,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
