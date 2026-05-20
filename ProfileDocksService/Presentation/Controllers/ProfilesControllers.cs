@@ -23,7 +23,7 @@ public class ProfilesControllers : ControllerBase
         return Ok(profile);
     }
 
-    [Authorize(Policy = "CanView")]
+    //[Authorize(Policy = "CanView")]
     [HttpPut("profiles/{userId}")]
     public async Task<IActionResult> UpdateProfile(UpdateProfileDto request)
     {

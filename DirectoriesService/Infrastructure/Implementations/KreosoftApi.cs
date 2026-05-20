@@ -17,7 +17,7 @@ public class KreosoftApi : IKreosoftApi
 
     public async Task<ProgramsResponseDto> GetPrograms()
     {
-        var response = await _httpClient.GetAsync("programs?page=1&size=365");
+        var response = await _httpClient.GetAsync("programs?page=1&size=1000");
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<ProgramsResponseDto>();
     }

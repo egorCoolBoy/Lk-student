@@ -14,6 +14,7 @@ using UsersService.Application.JWT;
 using UsersService.Domain;
 using UsersService.Domain.Entities;
 using UsersService.Infrastructure;
+using UsersService.Infrastructure.Broker;
 using UsersService.Infrastructure.Hash;
 using UsersService.Presentation.ExceptionMiddleware;
 using UsersService.Presentation.Validators;
@@ -27,7 +28,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>()
 
 builder.Services.AddMassTransit(x =>
 {
-    
+    x.AddConsumer<ManagerTookApplicantConsumer>();
+    x.AddConsumer<AdmissionStatusChangedConsumer>();
     x.AddEntityFrameworkOutbox<AppDbContext>(o =>
     {
         o.UsePostgres();
@@ -41,6 +43,8 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
+
+        cfg.ConfigureEndpoints(context);
        
     });
     

@@ -1,4 +1,5 @@
-﻿using NotificationsService.Dto;
+﻿using Contracts;
+using NotificationsService.Dto;
 
 namespace NotificationsService.EmailService;
 
@@ -23,10 +24,21 @@ public class EmailService : IEmailService
         await SendEmailAsync(toEmail, subject, body);
     }
 
-    public async Task SendStatusChangedEmailAsync(string toEmail, string faculty,string program)
+    public async Task SendManagerTookApplicantEmailAsync(ManagerTookApplicantNotification notification)
+    {
+        var subject = "Приемная кампания";
+        var body = $"Здравствуйте, {notification.ApplicantName}! За ваше поступление на программу: {notification.ProgramName}, отвечает менеджер:{notification.ManagerName} ";
+        await SendEmailAsync(notification.ApplicantEmail, subject, body);
+        
+        var subjectManeger = "Приемная кампания";
+        var bodyManeger = $"Здравствуйте, {notification.ManagerName}! Вы отвечаете ха поступление на программу: {notification.ProgramName}, данного абитуриента: {notification.ApplicantName} ";
+        await SendEmailAsync(notification.ManagerEmail, subjectManeger, bodyManeger);
+    }
+
+    public async Task SendStatusChangedEmailAsync(string toEmail,string name,string program,string status)
     {
         var subject = "Изменение статуса поступления";
-        var body = $"Здравствуйте, {toEmail}, Проверьте новый статус поступления по программе: {program} факультета: {faculty}";
+        var body = $"Здравствуйте, {name}, ваш новый статус поступления по программе: {program}  теперь:{status}";
 
         await SendEmailAsync(toEmail, subject, body);
     }
@@ -58,7 +70,7 @@ public class EmailService : IEmailService
             IsBodyHtml = false
         };
 
-        message.To.Add(toEmail);
+        message.To.Add("ega02022007@gmail.com");
 
         await client.SendMailAsync(message);
     }

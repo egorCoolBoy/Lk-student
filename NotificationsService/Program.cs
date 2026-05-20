@@ -12,6 +12,8 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<ManagerConsumer>();
+    x.AddConsumer<ManagerTookApplicantNotificationConsumer>();
+    x.AddConsumer<AdmissionStatusChangedNotificationConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -21,10 +23,7 @@ builder.Services.AddMassTransit(x =>
             h.Password("guest");
         });
 
-        cfg.ReceiveEndpoint("manager-created-queue", e =>
-        {
-            e.ConfigureConsumer<ManagerConsumer>(context);
-        });
+        cfg.ConfigureEndpoints(context);
     });
 });
 

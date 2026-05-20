@@ -1,8 +1,8 @@
 ﻿namespace Contracts;
 
-public class AdmissionStatusChanged
+public class AdmissionStatusChangedNotification
 {
-    public Guid ApplicantId { get; set; }
+    public string ApplicantEmail { get; set; }
     public string ApplicantName { get; set; }
     public string ProgramName { get; set; }
     public string Status { get; set; }

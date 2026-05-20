@@ -1,4 +1,5 @@
-﻿using DirectoryService.Application.Interface;
+﻿using DirectoryService.Application.DTO;
+using DirectoryService.Application.Interface;
 using DirectoryService.Domain.Entities;
 using DirectoryService.Infrastructure.AppDbContext;
 using Microsoft.EntityFrameworkCore;
@@ -27,126 +28,191 @@ public class DirectoriesService : IDirectoriesService
 		_kreosoftApi = kreosoftApi;
 		_context = context;
 	}
-
+	
 	public async Task<ImportedDirectroriesStatistic> ImportDirectoriesAsync()
 	{
-		await ImportLock.WaitAsync();
 		await using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            var educationLevelsTask = _kreosoftApi.GetEducationLevels();
-            var educationDocumentsTask = _kreosoftApi.GetEducationDocuments();
-            var facultiesTask = _kreosoftApi.GetFaculties();
-            var programsTask = _kreosoftApi.GetPrograms();
 
-            await Task.WhenAll(educationLevelsTask, educationDocumentsTask, facultiesTask, programsTask);
-            
-            var educationLevels = (await educationLevelsTask).ToList();
-            var educationDocuments = (await educationDocumentsTask).ToList();
-            var faculties = (await facultiesTask).ToList();
-            var programs = (await programsTask).Programs.ToList();
+		try
+		{
+			var data = await LoadDirectoriesAsync();
 
-            _context.ChangeTracker.Clear();
-            //удаление всех записей
-            _context.EducationDocumentNextLevels.RemoveRange(_context.EducationDocumentNextLevels);
-            _context.Programs.RemoveRange(_context.Programs);
-            _context.EducationDocuments.RemoveRange(_context.EducationDocuments);
-            _context.Faculties.RemoveRange(_context.Faculties);
-            _context.EducationLevels.RemoveRange(_context.EducationLevels);
+			await ClearDirectoriesAsync();
 
-            await _context.SaveChangesAsync();
+			await ImportEducationLevelsAsync(data.EducationLevels);
 
-            var levelIds = educationLevels.Select(x => x.Id).ToHashSet();
+			await ImportEducationDocumentsAsync(
+				data.EducationDocuments,
+				data.EducationLevels);
 
-            var levelEntities = educationLevels.Select(x => new EducationLevel
-            {
-                Id = x.Id,
-                Name = x.Name
-            });
+			await ImportFacultiesAsync(data.Faculties);
 
-            _context.EducationLevels.AddRange(levelEntities);
+			await ImportProgramsAsync(
+				data.Programs,
+				data.Faculties,
+				data.EducationLevels);
 
-            var documentEntities = educationDocuments
-                .Where(x => x.EducationLevel != null && levelIds.Contains(x.EducationLevel.Id))
-                .Select(x => new EducationDocument
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    CreateTime = EnsureUtc(x.CreateTime),
-                    EducationLevelId = x.EducationLevel.Id
-                });
+			var statistic = CreateStatistic(data);
 
-            _context.EducationDocuments.AddRange(documentEntities);
+			_context.DirectoryImportStatistics.Add(statistic);
 
-            var documentLinks = educationDocuments
-                .Where(d => d.NextEducationLevels != null)
-                .SelectMany(d => d.NextEducationLevels.Select(n => new EducationDocumentNextLevel
-                {
-                    EducationDocumentId = d.Id,
-                    EducationLevelId = n.Id
-                }));
+			await _context.SaveChangesAsync();
+			await transaction.CommitAsync();
 
-            _context.EducationDocumentNextLevels.AddRange(documentLinks);
-
-            var facultyIds = faculties.Select(x => x.Id).ToHashSet();
-
-            var facultyEntities = faculties.Select(x => new Faculty
-            {
-                Id = x.Id,
-                Name = x.Name,
-                CreateTime = EnsureUtc(x.CreateTime)
-            });
-
-            _context.Faculties.AddRange(facultyEntities);
-
-            var programEntities = programs
-                .Where(x => x.Faculty != null && x.EducationLevel != null)
-                .Where(x => facultyIds.Contains(x.Faculty.Id))
-                .Where(x => levelIds.Contains(x.EducationLevel.Id))
-                .Select(x => new ProgramEntity
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Code = x.Code,
-                    Language = x.Language,
-                    EducationForm = x.EducationForm,
-                    CreateTime = EnsureUtc(x.CreateTime),
-                    FacultyId = x.Faculty.Id,
-                    EducationLevelId = x.EducationLevel.Id
-                });
-
-            _context.Programs.AddRange(programEntities);
-
-            await _context.SaveChangesAsync();
-
-            var statistic = new ImportedDirectroriesStatistic
-            {
-                Id = Guid.NewGuid(),
-                ImportTime = DateTime.UtcNow,
-                Imported = new ImportedDirectories
-                {
-                    EducationLevels = educationLevels.Count,
-                    DocumentTypes = educationDocuments.Count,
-                    Faculties = faculties.Count,
-                    Programs = programs.Count
-                }
-            };
-
-            _context.DirectoryImportStatistics.Add(statistic);
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            return statistic;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-        finally
-        {
-            ImportLock.Release();
-        }
+			return statistic;
+		}
+		catch
+		{
+			await transaction.RollbackAsync();
+			throw;
+		}
 	}
+	
+	
+	private  class DirectoriesData
+	{
+		public required List<EducationLevelDto> EducationLevels { get; init; }
+
+		public required List<EducationDocumentDto> EducationDocuments { get; init; }
+
+		public required List<FacultyDto> Faculties { get; init; }
+
+		public required List<ProgramDto> Programs { get; init; }
+	}
+	private async Task<DirectoriesData> LoadDirectoriesAsync()
+	{
+		var educationLevelsTask = _kreosoftApi.GetEducationLevels();
+		var educationDocumentsTask = _kreosoftApi.GetEducationDocuments();
+		var facultiesTask = _kreosoftApi.GetFaculties();
+		var programsTask = _kreosoftApi.GetPrograms();
+
+		await Task.WhenAll(
+			educationLevelsTask,
+			educationDocumentsTask,
+			facultiesTask,
+			programsTask);
+
+		return new DirectoriesData
+		{
+			EducationLevels = (await educationLevelsTask).ToList(),
+			EducationDocuments = (await educationDocumentsTask).ToList(),
+			Faculties = (await facultiesTask).ToList(),
+			Programs = (await programsTask).Programs.ToList()
+		};
+	}
+	
+	private async Task ClearDirectoriesAsync()
+	{
+		await _context.EducationDocumentNextLevels.ExecuteDeleteAsync();
+		await _context.Programs.ExecuteDeleteAsync();
+		await _context.EducationDocuments.ExecuteDeleteAsync();
+		await _context.Faculties.ExecuteDeleteAsync();
+		await _context.EducationLevels.ExecuteDeleteAsync();
+	}
+	private async Task ImportEducationLevelsAsync(
+		List<EducationLevelDto> educationLevels)
+	{
+		var entities = educationLevels.Select(x => new EducationLevel
+		{
+			Id = x.Id,
+			Name = x.Name
+		});
+
+		await _context.EducationLevels.AddRangeAsync(entities);
+	}
+	private async Task ImportEducationDocumentsAsync(
+		List<EducationDocumentDto> educationDocuments,
+		List<EducationLevelDto> educationLevels)
+	{
+		var levelIds = educationLevels
+			.Select(x => x.Id);
+
+		var documentEntities = educationDocuments
+			.Where(x => x.EducationLevel != null)
+			.Where(x => levelIds.Contains(x.EducationLevel.Id))
+			.Select(x => new EducationDocument
+			{
+				Id = x.Id,
+				Name = x.Name,
+				CreateTime = EnsureUtc(x.CreateTime),
+				EducationLevelId = x.EducationLevel.Id
+			});
+
+		await _context.EducationDocuments.AddRangeAsync(documentEntities);
+
+		var links = educationDocuments
+			.Where(x => x.NextEducationLevels != null)
+			.SelectMany(x => x.NextEducationLevels.Select(level =>
+				new EducationDocumentNextLevel
+				{
+					EducationDocumentId = x.Id,
+					EducationLevelId = level.Id
+				}));
+
+		await _context.EducationDocumentNextLevels.AddRangeAsync(links);
+	}
+	
+	private async Task ImportFacultiesAsync(
+		List<FacultyDto> faculties)
+	{
+		var entities = faculties.Select(x => new Faculty
+		{
+			Id = x.Id,
+			Name = x.Name,
+			CreateTime = EnsureUtc(x.CreateTime)
+		});
+
+		await _context.Faculties.AddRangeAsync(entities);
+	}
+	
+	private async Task ImportProgramsAsync(
+		List<ProgramDto> programs,
+		List<FacultyDto> faculties,
+		List<EducationLevelDto> educationLevels)
+	{
+		var facultyIds = faculties
+			.Select(x => x.Id);
+			
+
+		var levelIds = educationLevels
+			.Select(x => x.Id);
+
+		var entities = programs
+			.Where(x => x.Faculty != null)
+			.Where(x => x.EducationLevel != null)
+			.Where(x => facultyIds.Contains(x.Faculty.Id))
+			.Where(x => levelIds.Contains(x.EducationLevel.Id))
+			.Select(x => new ProgramEntity
+			{
+				Id = x.Id,
+				Name = x.Name,
+				Code = x.Code,
+				Language = x.Language,
+				EducationForm = x.EducationForm,
+				CreateTime = EnsureUtc(x.CreateTime),
+				FacultyId = x.Faculty.Id,
+				EducationLevelId = x.EducationLevel.Id
+			});
+
+		await _context.Programs.AddRangeAsync(entities);
+	}
+	private static ImportedDirectroriesStatistic CreateStatistic(
+		DirectoriesData data)
+	{
+		return new ImportedDirectroriesStatistic
+		{
+			Id = Guid.NewGuid(),
+			ImportTime = DateTime.UtcNow,
+			Imported = new ImportedDirectories
+			{
+				EducationLevels = data.EducationLevels.Count,
+				DocumentTypes = data.EducationDocuments.Count,
+				Faculties = data.Faculties.Count,
+				Programs = data.Programs.Count
+			}
+		};
+	}
+
+	
+	
 }
