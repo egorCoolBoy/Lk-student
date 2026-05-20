@@ -19,11 +19,11 @@ public class DirectoriesAPI : IDirectoriesAPI
         return await response.Content.ReadFromJsonAsync<ProgramDto>();
     }
 
-    public async Task<EducationDocumentTypesDto> GetEducationDocumentTypeByIdAsync(Guid id)
+    public async Task<List<EducationDocumentTypesDto>> GetEducationDocumentTypeAsync()
     {
-        var response = await _httpClient.GetAsync($"/api/education-documents/{id}");
+        var response = await _httpClient.GetAsync($"/api/education-documents");
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<EducationDocumentTypesDto>();
+        return await response.Content.ReadFromJsonAsync<List<EducationDocumentTypesDto>>();
     }
     
     

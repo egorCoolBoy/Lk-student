@@ -1,9 +1,12 @@
 using System.Text;
+using AdmisionsService.Application;
 using AdmisionsService.Application.Interfaces;
 using AdmisionsService.Application.ManagerFacultyService;
 using AdmisionsService.Infrastructure;
 using AdmisionsService.Infrastructure.AppDbContext;
 using AdmisionsService.Infrastructure.Implementations;
+using AdmisionsService.Presentation.ExecptionMiddleware;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IManagerFacultyService, ManagerFacultyService>();
+builder.Services.AddScoped<IAdmissionService, AdmissionService>();
 
 builder.Services.Configure<NOptions>(builder.Configuration.GetSection("NOptions"));
 builder.Services.Configure<DocksApi>(builder.Configuration.GetSection("DocksApi"));
@@ -44,6 +48,26 @@ builder.Services.AddHttpClient<IUsersServiceApi, UsersServiceApi>((sp, client) =
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+builder.Services.AddMassTransit(x =>
+{
+    
+    x.AddEntityFrameworkOutbox<AppDbContext>(o =>
+    {
+        o.UsePostgres();
+        o.UseBusOutbox();
+    });
+    
+    x.UsingRabbitMq((context, cfg) =>
+    { 
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+       
+    });
+    
+});
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -92,6 +116,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 var app = builder.Build();
+//app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

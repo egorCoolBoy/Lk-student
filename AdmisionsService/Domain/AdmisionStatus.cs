@@ -6,5 +6,5 @@ public enum AdmisionStatus
     InReview,
     Approved,
     Rejected,
-    Cancelled
+    Closed
 }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using AdmisionsService.Domain;
+using MassTransit;
+
 namespace AdmisionsService.Infrastructure.AppDbContext;
 
 public class AppDbContext : DbContext
@@ -20,5 +22,10 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(x => new { x.ManagerId, x.FacultyId });
         });
+        modelBuilder.AddOutboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddInboxStateEntity();
     }
+    
+    
 }

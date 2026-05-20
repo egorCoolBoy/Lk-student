@@ -1,8 +1,8 @@
 ﻿namespace AdmisionsService.Application.Dtos.Admisions;
 
-public class CreateAdmisisonDto
+public class UpdatePriorityDto
 {
-    public Guid UserId { get; set; }
+    public Guid ApplicantId { get; set; }
     public Guid ProgramId { get; set; }
     public int Priority { get; set; }
 }

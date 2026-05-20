@@ -14,14 +14,14 @@ public class ManagerFacultyController : ControllerBase
     {
         _mfService = mfService;
     }
-    [Authorize(Roles = "Manager")]
+    //[Authorize(Roles = "Manager")]
     [HttpPost]
     public async Task<IActionResult> PostManagerFaculty(ManagerFacultyDto managerFaculty)
     {
         await _mfService.CreateManagerFaculty(managerFaculty);
         return Ok();
     }
-    [Authorize(Roles = "Manager")]
+    //[Authorize(Roles = "Manager")]
     [HttpDelete]
     public async Task<IActionResult> DeleteManagerFaculty(ManagerFacultyDto managerFaculty)
     {
