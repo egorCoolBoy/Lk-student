@@ -112,7 +112,7 @@ public class UserService : IUsersService
         (
             refreshToken,
             user.Id,
-            DateTime.UtcNow.AddDays(_config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"))
+            DateTime.UtcNow.AddMinutes(_config.GetValue<int>("Jwt:RefreshTokenLifetimeMinutes"))
         );
 
         _dbContext.RefreshTokens.Add(refresh);

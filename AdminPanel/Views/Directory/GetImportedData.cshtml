@@ -1,0 +1,18 @@
+﻿@model ImportedDirectroriesStatistic
+<div class="container">
+    <h3>Импорт данных</h3>
+
+    <p>Время последнего импорта: @Model.ImportTime</p>
+
+    <ul>
+        <li>Программы: @Model.Imported.Programs</li>
+        <li>Уровни образования: @Model.Imported.EducationLevels</li>
+        <li>Документы: @Model.Imported.DocumentTypes</li>
+        <li>Факультеты: @Model.Imported.Faculties</li>
+    </ul>
+    <form asp-action="Import" method="post">
+        <button>
+            Запустить импорт
+        </button>
+    </form>
+</div>

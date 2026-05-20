@@ -21,4 +21,11 @@ public class DirectoriesController : ControllerBase
         var result = await _directoriesService.ImportDirectoriesAsync();
         return Ok(result);
     }
+    //[Authorize(Roles = "Admin")]
+    [HttpGet("data")]
+    public async Task<IActionResult> GetImportData()
+    {
+        var result = await _directoriesService.GetImportedDirectoriesStatistic();
+        return Ok(result);
+    }
 }

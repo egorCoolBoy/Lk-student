@@ -7,4 +7,12 @@
         <RootNamespace>WebApplication1</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\Dtos\" />
+    </ItemGroup>
+
 </Project>

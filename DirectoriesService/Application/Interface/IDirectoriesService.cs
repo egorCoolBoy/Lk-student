@@ -5,4 +5,5 @@ namespace DirectoryService.Application.Interface;
 public interface IDirectoriesService
 {
     Task<ImportedDirectroriesStatistic> ImportDirectoriesAsync();
+    public Task<ImportedDirectroriesStatistic> GetImportedDirectoriesStatistic();
 }

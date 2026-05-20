@@ -28,6 +28,15 @@ public class DirectoriesService : IDirectoriesService
 		_kreosoftApi = kreosoftApi;
 		_context = context;
 	}
+
+	public async Task<ImportedDirectroriesStatistic> GetImportedDirectoriesStatistic()
+	{
+		var lastImport = await _context.DirectoryImportStatistics
+			.OrderByDescending(x => x.ImportTime)
+			.FirstOrDefaultAsync();
+		
+		return lastImport;
+	}
 	
 	public async Task<ImportedDirectroriesStatistic> ImportDirectoriesAsync()
 	{
