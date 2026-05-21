@@ -14,9 +14,8 @@ public class RegisterManagerRequestValidator : AbstractValidator<RegisterManager
 
         RuleFor(x => x.Password)
             .NotEmpty()
-            .MinimumLength(8)
-            .Matches(@"^(?=.*[A-Za-z])(?=.*\d).+$")
-            .WithMessage("Password must contain at least one letter and one digit");
-        
+            .MinimumLength(8);
+
+
     }
 }

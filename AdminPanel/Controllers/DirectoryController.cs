@@ -14,14 +14,37 @@ public class DirectoryController : Controller
 
     public async Task<IActionResult> GetImportedData()
     {
-        var result = await _directoriesApi.GetImportedData();
-        return View(result);
+        var accessToken = HttpContext.Request.Cookies["access_token"];
+        if (accessToken == null)
+            return RedirectToAction("Login","Account");
+
+        try
+        {
+            var model = await _directoriesApi.GetImportedData(accessToken);
+            return View(model);
+        }
+        catch
+        {
+            ViewBag.GetImport = "Error";
+            return View();
+        }
+        
     }
     
     public async Task<IActionResult> Import()
     {
-        await _directoriesApi.Import();
-
+        var accessToken = HttpContext.Request.Cookies["access_token"];
+        if (accessToken == null)
+            return RedirectToAction("Login","Account");
+        
+        try
+        {
+            await _directoriesApi.Import(accessToken);
+        }
+        catch
+        {
+            ViewBag.Import = "Import failed";
+        }
         return RedirectToAction("GetImportedData");
     }
 }

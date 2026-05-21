@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UsersService;
@@ -45,7 +46,7 @@ public class UsersController : ControllerBase
         return Ok(responce);
 
     }
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost("register/manager")]
     public async Task<IActionResult> Post(RegisterManagerRequest request)
     {
@@ -232,7 +233,7 @@ public class UsersController : ControllerBase
     
     private Guid GetUserId()
     {
-        var id = User.FindFirst("sub")?.Value;
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(id))
             throw new UnauthorizedAccessException("Missing sub claim");

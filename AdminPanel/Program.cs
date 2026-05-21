@@ -40,6 +40,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Directory}/{action=GetImportedData}");
+    pattern: "{controller=Account}/{action=Login}");
 
 app.Run();

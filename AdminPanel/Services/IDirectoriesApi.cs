@@ -5,6 +5,6 @@ namespace WebApplication1.Services;
 
 public interface IDirectoriesApi
 {
-    public Task<ImportedDirectroriesStatistic> GetImportedData();
-    public Task<ImportedDirectroriesStatistic> Import();
+    public Task<ImportedDirectroriesStatistic> GetImportedData(string accessToken);
+    public Task<ImportedDirectroriesStatistic> Import(string accessToken);
 }

@@ -14,14 +14,14 @@ public class DirectoriesController : ControllerBase
     {
         _directoriesService = directoriesService;
     }
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost("import")]
     public async Task<IActionResult> ImportDirectory()
     {
         var result = await _directoriesService.ImportDirectoriesAsync();
         return Ok(result);
     }
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet("data")]
     public async Task<IActionResult> GetImportData()
     {

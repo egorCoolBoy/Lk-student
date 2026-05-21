@@ -1,20 +1,27 @@
-﻿@model LoginRequest
-
+﻿@model WebApplication1.Models.VIewModels.LoginModel
+@{
+    ViewData["Title"] = "Вход";
+}
+@if (ViewBag.Error != null)
+{
+    <div style="color: red">
+        @ViewBag.Error
+    </div>
+}
 <form asp-action="Login" method="post">
 
-    <div class="mb-3">
+    <div>
         <label>Login</label>
-        <input asp-for="Login" class="form-control" />
+        <input asp-for="Email" />
     </div>
 
-    <div class="mb-3">
+    <div>
         <label>Password</label>
         <input asp-for="Password"
-               type="password"
-               class="form-control" />
+               type="password"/>
     </div>
 
-    <button type="submit" class="btn btn-primary">
+    <button type="submit">
         Login
     </button>
 

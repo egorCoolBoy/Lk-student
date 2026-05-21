@@ -1,0 +1,46 @@
+﻿@model WebApplication1.Models.VIewModels.RegisterModel
+@{
+    ViewData["Title"] = "Регистрация менеджера";
+}
+@if (ViewBag.Success != null)
+{
+    <div style="color: green">
+        @ViewBag.Success
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div style="color: red">
+        @ViewBag.Error
+    </div>
+}
+<form asp-action="RegisterManager" method="post">
+
+    <div>
+        <label>Login</label>
+        <input asp-for="Email" />
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input asp-for="Password"
+               type="password"/>
+    </div>
+    <div>
+        <label>FullName</label>
+        <input asp-for="FullName">
+    </div>
+    <div>
+        <label>Role</label>
+
+        <select asp-for="Role"
+                asp-items="Html.GetEnumSelectList<Role>()">
+        </select>
+    </div>
+
+    <button type="submit" >
+        Login
+    </button>
+
+</form>

@@ -11,8 +11,4 @@
       <ProjectReference Include="..\Contracts\Contracts.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services\Dtos\" />
-    </ItemGroup>
-
 </Project>

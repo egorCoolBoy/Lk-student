@@ -1,6 +1,5 @@
 using System.Text;
 using Contracts;
-using MassTransit.KafkaIntegration;
 using Microsoft.EntityFrameworkCore;
 using UsersService.Infrastructure.AppDbContext;
 using FluentValidation;
@@ -11,7 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using UsersService;
 using UsersService.Application.Hash;
 using UsersService.Application.JWT;
-using UsersService.Domain;
 using UsersService.Domain.Entities;
 using UsersService.Infrastructure;
 using UsersService.Infrastructure.Broker;
@@ -111,23 +109,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var adminSettings = scope.ServiceProvider
-        .GetRequiredService<IOptions<AdminSettings>>().Value;
-    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHash>();
-    
-    if (!db.Users.Any(u => u.Email == adminSettings.Email))
-    {
-        var passwordHashed = hasher.Hash(adminSettings.Password); 
-        var admin = new User(adminSettings.Email, passwordHashed, Role.Admin);
-
-        db.Users.Add(admin);
-        db.SaveChanges();
-    }
 }
 
 app.UseHttpsRedirection();
