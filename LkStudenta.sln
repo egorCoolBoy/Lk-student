@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPanel", "AdminPanel\Ad
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{130D63D8-C55F-453A-ADDC-2F9E9AA4904E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmissionServiceTest", "AdmissionServiceTest\AdmissionServiceTest.csproj", "{0C546CD1-7938-4831-AEF0-CF0E00797ED9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{130D63D8-C55F-453A-ADDC-2F9E9AA4904E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{130D63D8-C55F-453A-ADDC-2F9E9AA4904E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{130D63D8-C55F-453A-ADDC-2F9E9AA4904E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C546CD1-7938-4831-AEF0-CF0E00797ED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C546CD1-7938-4831-AEF0-CF0E00797ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C546CD1-7938-4831-AEF0-CF0E00797ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C546CD1-7938-4831-AEF0-CF0E00797ED9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -264,7 +264,7 @@ public class AdmissionService : IAdmissionService
     }
     
     
-    private bool CheckEducationLevel(List<EducationDocxDto>educations, ProgramDto program,List<EducationDocumentTypesDto> documentTypes)
+    static public bool CheckEducationLevel(List<EducationDocxDto>educations, ProgramDto program,List<EducationDocumentTypesDto> documentTypes)
     {
         //айди документов абитуриента
         var educationIds = educations.Select(e => e.EducationTypeId).ToList();
