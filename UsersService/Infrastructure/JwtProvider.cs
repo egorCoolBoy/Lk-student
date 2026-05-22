@@ -1,6 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Contracts;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UsersService.Application.JWT;
 using UsersService.Domain.Entities;
@@ -9,11 +11,11 @@ namespace UsersService.Infrastructure;
 
 public class JwtProvider : IJwtProvider
 {
-    private readonly IConfiguration _config;
+    private readonly JwtOptions _option;
 
-    public JwtProvider(IConfiguration config)
+    public JwtProvider(IOptions<JwtOptions> option)
     {
-        _config = config;
+        _option = option.Value;
     }
 
     public string GenerateAccessToken(User user)
@@ -25,10 +27,10 @@ public class JwtProvider : IJwtProvider
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
-        var secret = _config["Jwt:Secret"];
-        var issuer = _config["Jwt:Issuer"];
-        var audience = _config["Jwt:Audience"];
-        var lifetime = int.Parse(_config["Jwt:AccessTokenLifetimeMinutes"]);
+        var secret = _option.Secret;
+        var issuer = _option.Issuer;
+        var audience = _option.Audience;
+        var lifetime = _option.AccessTokenLifetimeMinutes;
 
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(secret)

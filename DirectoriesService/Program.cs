@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
+using Contracts;
 using DirectoryService.Application.Interface;
 using DirectoryService.Application.Services;
 using DirectoryService.Infrastructure;
@@ -49,9 +50,12 @@ builder.Services.AddScoped<IDirectoriesService, DirectoriesService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("Jwt"));
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -59,11 +63,11 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])
+                Encoding.UTF8.GetBytes(jwt.Secret)
             )
         };
     });

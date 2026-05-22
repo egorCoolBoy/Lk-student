@@ -5,7 +5,6 @@ using UsersService.Infrastructure.AppDbContext;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MassTransit;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UsersService;
 using UsersService.Application.Hash;
@@ -50,11 +49,12 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<IUsersService, UserService >();
 builder.Services.AddScoped<IPasswordHash, PasswordHash>();
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
-builder.Services.Configure<AdminSettings>(
-    builder.Configuration.GetSection("AdminSettings"));
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("Jwt"));
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -62,11 +62,11 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])
+                Encoding.UTF8.GetBytes(jwt.Secret)
             )
         };
     });

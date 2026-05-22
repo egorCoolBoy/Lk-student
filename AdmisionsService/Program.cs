@@ -6,6 +6,7 @@ using AdmisionsService.Infrastructure;
 using AdmisionsService.Infrastructure.AppDbContext;
 using AdmisionsService.Infrastructure.Implementations;
 using AdmisionsService.Presentation.ExecptionMiddleware;
+using Contracts;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -69,9 +70,12 @@ builder.Services.AddMassTransit(x =>
     
 });
 
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("Jwt"));
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -79,11 +83,11 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])
+                Encoding.UTF8.GetBytes(jwt.Secret)
             )
         };
     });
