@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.PassportDocks;
 
@@ -14,14 +16,14 @@ public class PassportScansController : ControllerBase
     {
         _passportScanService = passportScanService;
     }
-
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetScans(Guid passportId)
     {
         var scans = await _passportScanService.GetScans(passportId);
         return Ok(scans);
     }
-
+    [Authorize]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> AddScan(Guid passportId, [FromForm] UploadScanRequest request)
@@ -39,18 +41,20 @@ public class PassportScansController : ControllerBase
 
         return Ok(result);
     }
-
+    [Authorize]
     [HttpGet("{scanId:guid}/download")]
     public async Task<IActionResult> DownloadScan(Guid passportId, Guid scanId)
     {
         var result = await _passportScanService.DownloadScan(passportId, scanId);
         return File(result.Content, result.ContentType, result.FileName);
     }
-
+    [Authorize]
     [HttpDelete("{scanId:guid}")]
     public async Task<IActionResult> DeleteScan(Guid passportId, Guid scanId)
     {
         await _passportScanService.DeleteScan(passportId, scanId);
         return NoContent();
     }
+    
+    
 }

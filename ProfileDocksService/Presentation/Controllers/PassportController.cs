@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.Dtos;
@@ -16,15 +17,19 @@ public class PassportController : ControllerBase
         _passportService = passportService;
     }
 
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     [HttpGet("passports/user/{userId}")]
     public async Task<IActionResult> GetPassports(Guid userId)
     {
+        var id = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (id != userId && role == "Applicant")
+            return Forbid();
         var passports = await _passportService.GetPassports(userId);
         return Ok(passports);
     }
 
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     [HttpGet("passports/{passportId}")]
     public async Task<IActionResult> GetPassport(Guid passportId)
     {
@@ -32,15 +37,19 @@ public class PassportController : ControllerBase
         return Ok(passport);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpPost("passports/{userId}")]
     public async Task<IActionResult> CreatePassport(Guid userId, [FromBody] CreatePassportDto dto)
     {
+        var id = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (id != userId && role == "Applicant")
+            return Forbid();
         var passport = await _passportService.CreatePassport(userId, dto);
         return CreatedAtAction(nameof(GetPassport), new { passportId = passport.Id }, passport);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpPut("passports/{passportId}")]
     public async Task<IActionResult> UpdatePassport(Guid passportId, [FromBody] UpdatePassportDto dto)
     {
@@ -48,7 +57,7 @@ public class PassportController : ControllerBase
         return Ok(passport);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpDelete("passports/{passportId}")]
     public async Task<IActionResult> DeletePassport(Guid passportId)
     {

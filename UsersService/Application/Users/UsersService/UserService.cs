@@ -9,6 +9,7 @@ using UsersService.Application.Users.UsersResults;
 using UsersService.Domain;
 using UsersService.Domain.Entities;
 using UsersService.Infrastructure.AppDbContext;
+using UsersService.Presentation.DTO;
 
 namespace UsersService;
 
@@ -53,8 +54,6 @@ public class UserService : IUsersService
         {
             await _publish.Publish(new ApplicantCreated() { Id = user.Id });
         }
-
-        await _publish.Publish(new ApplicantCreated() { Id = user.Id });
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
 
@@ -283,8 +282,26 @@ public class UserService : IUsersService
         };
         return userDto;
     }
-    
-    
+
+    public async Task<GetMeResult> UpdateManagerName(ChangeManagerName command)
+    {
+        var user =await _dbContext.Users.FindAsync(command.Id);
+        if (user == null)
+            throw new KeyNotFoundException("User not found");
+        if(user.Role == Role.Applicant || user.Role == Role.Admin)
+            throw new InvalidOperationException("You cannot update the applicant and admin");
+        user.FullName = command.Name;
+        await _dbContext.SaveChangesAsync();
+        
+        return new GetMeResult()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            FullName = user.FullName
+        };
+    }
+
     private async Task<bool> EmailExists(string email)
     {
         return await _dbContext.Users.AnyAsync(u => u.Email == email);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.Dtos;
@@ -24,7 +25,7 @@ public class EducationController : ControllerBase
         return Ok(educations);
     }
 
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     [HttpGet("educations/{educationId}")]
     public async Task<IActionResult> GetEducation(Guid educationId)
     {
@@ -32,15 +33,20 @@ public class EducationController : ControllerBase
         return Ok(education);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpPost("educations/{userId}")]
     public async Task<IActionResult> CreateEducation(Guid userId, [FromBody] CreateEducationDto dto)
     {
+        var id = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (id != userId && role == "Applicant")
+            return Forbid();
+        
         var education = await _educationService.CreateEducation(userId, dto);
         return CreatedAtAction(nameof(GetEducation), new { educationId = education.Id }, education);
     }
 
-   // [Authorize]
+    [Authorize]
     [HttpPut("educations/{educationId}")]
     public async Task<IActionResult> UpdateEducation(Guid educationId, [FromBody] UpdateEducationDto dto)
     {
@@ -48,7 +54,7 @@ public class EducationController : ControllerBase
         return Ok(education);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpDelete("educations/{educationId}")]
     public async Task<IActionResult> DeleteEducation(Guid educationId)
     {

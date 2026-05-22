@@ -16,7 +16,7 @@ public class AccountController : Controller
         _usersService = usersService;
     }
 
-   [HttpGet]
+    [HttpGet]
     public IActionResult Login()
     {
         return View();
@@ -36,9 +36,9 @@ public class AccountController : Controller
             Response.Cookies.Append("access_token", accessToken);
             return RedirectToAction("GetImportedData", "Directory");
         }
-        catch
+        catch (Exception ex)
         {
-            ViewBag.Error = "Не удалось войти: неправильный логин или пароль";
+            ViewBag.Error = ex.Message;
             return View(model);
         }
     }

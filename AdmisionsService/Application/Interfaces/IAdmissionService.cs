@@ -12,4 +12,5 @@ public interface IAdmissionService
     public Task<GetAdmissionDto> GetAdmissionByIds(GetAdmissionByIds dto);
     public Task<GetAdmissionDto> UpdatePriority(UpdatePriorityDto dto);
     public Task<GetAdmissionDto> UpdateStatus(UpdateStatusDto dto);
+    public Task<List<GetAdmissionDto>> GetAdmissionByApplicantId(Guid id);
 }

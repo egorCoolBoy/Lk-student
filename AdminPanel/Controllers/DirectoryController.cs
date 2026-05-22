@@ -23,9 +23,9 @@ public class DirectoryController : Controller
             var model = await _directoriesApi.GetImportedData(accessToken);
             return View(model);
         }
-        catch
+        catch (Exception ex)
         {
-            ViewBag.GetImport = "Error";
+            ViewBag.GetImport = ex.Message;
             return View();
         }
         
@@ -41,9 +41,9 @@ public class DirectoryController : Controller
         {
             await _directoriesApi.Import(accessToken);
         }
-        catch
+        catch (Exception ex)
         {
-            ViewBag.Import = "Import failed";
+            ViewBag.Import = ex.Message;
         }
         return RedirectToAction("GetImportedData");
     }

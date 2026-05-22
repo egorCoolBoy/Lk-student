@@ -1,6 +1,7 @@
 ﻿using UsersService.Application.Users.Queries;
 using UsersService.Application.Users.UsersCommands;
 using UsersService.Application.Users.UsersResults;
+using UsersService.Presentation.DTO;
 
 namespace UsersService;
 
@@ -22,5 +23,5 @@ public interface IUsersService
     public Task<List<GetMeResult>> GetManagers();
     public Task RemoveManager(Guid id);
     public Task<GetMeResult> GetManager(Guid id);
-
+    public Task<GetMeResult> UpdateManagerName(ChangeManagerName command);
 }

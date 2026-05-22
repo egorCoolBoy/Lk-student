@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.EducationDocks;
 
@@ -16,13 +17,14 @@ public class EducationScansController : ControllerBase
     }
 
     [HttpGet]
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     public async Task<IActionResult> GetScans(Guid educationId)
     {
         var scans = await _educationScanService.GetScans(educationId);
         return Ok(scans);
     }
-
+    
+    [Authorize]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> AddScan(Guid educationId, [FromForm] UploadScanRequest request)
@@ -42,13 +44,13 @@ public class EducationScansController : ControllerBase
     }
 
     [HttpGet("{scanId}/download")]
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     public async Task<IActionResult> DownloadScan(Guid educationId, Guid scanId)
     {
         var result = await _educationScanService.DownloadScan(educationId, scanId);
         return File(result.Content, result.ContentType, result.FileName);
     }
-
+    [Authorize]
     [HttpDelete("{scanId}")]
     public async Task<IActionResult> DeleteScan(Guid educationId, Guid scanId)
     {

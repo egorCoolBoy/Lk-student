@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProfileDocksService.Applicantion;
 using ProfileDocksService.Applicantion.Dtos;
@@ -15,7 +16,6 @@ public class ProfilesControllers : ControllerBase
     {
         _profileService = profileService;
     }
-    //[Authorize(Policy = "CanView")]
     [HttpGet("profiles/{userId}")]
     public async Task<IActionResult> Getrofile(Guid userId)
     {
@@ -23,10 +23,14 @@ public class ProfilesControllers : ControllerBase
         return Ok(profile);
     }
 
-    //[Authorize(Policy = "CanView")]
+    [Authorize]
     [HttpPut("profiles/{userId}")]
     public async Task<IActionResult> UpdateProfile(UpdateProfileDto request)
     {
+        var id = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (id != request.UserId && role == "Applicant")
+            return Forbid();
         var newProfile = await _profileService.UpdateProfile(request);
         return Ok(newProfile);
     }

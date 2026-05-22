@@ -2,5 +2,5 @@
 
 public enum Role
 {
-    Applicant, Manager, HeadManager,Admin
+    Applicant,Manager,HeadManager,Admin
 }

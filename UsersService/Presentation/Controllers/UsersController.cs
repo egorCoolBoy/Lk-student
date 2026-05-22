@@ -209,34 +209,41 @@ public class UsersController : ControllerBase
         };
         return Ok(responce);
     }
-   //[Authorize(Roles="HeadManager")]
+    [Authorize(Roles = "HeadManager,Admin")]
     [HttpGet("Managers")]
     public async Task<IActionResult> GetManagers()
     {
         return Ok(await _usersService.GetManagers());
     }
-
+    
     [HttpGet("manager/{id}")]
     public async Task<IActionResult> GetManager(Guid id)
     {
         return Ok(await _usersService.GetManager(id));
     }
     
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("Manager/{id}")]
     public async Task<IActionResult> DeleteManager(Guid id)
     {
         await _usersService.RemoveManager(id);
         return NoContent();
     }
-    
-    
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("Manager/{id}")]
+    public async Task<IActionResult> UpdateManagerName(ChangeManagerName request)
+    {
+        var res = await _usersService.UpdateManagerName(request);
+        return Ok(res);
+        
+    }
     private Guid GetUserId()
     {
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(id))
-            throw new UnauthorizedAccessException("Missing sub claim");
+            throw new UnauthorizedAccessException("Missing name claim");
         return Guid.Parse(id);
     }
 

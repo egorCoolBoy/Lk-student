@@ -15,7 +15,6 @@ using ProfileDocksService.Infrastructure.AppDbContext;
 using ProfileDocksService.Infrastructure.Consumers;
 using ProfileDocksService.Presentation.Implementations;
 using ProfileDocksService.Presentation.Options;
-using ProfileDocksService.Presentation.Policy.CanView;
 using UsersService.Presentation.ExceptionMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,13 +66,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("CanView", policy =>
-    {
-        policy.Requirements.Add(new CanViewRequirement());
-    });
-});
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<ApplicantCreatedConsumer>();
@@ -113,7 +105,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))); 
 var app = builder.Build();
 
-//app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

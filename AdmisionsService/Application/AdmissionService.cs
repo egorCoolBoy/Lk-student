@@ -41,7 +41,7 @@ public class AdmissionService : IAdmissionService
             throw new InvalidOperationException($"max count of admisions is  {n}");
         
         if (dto.Priority > n || dto.Priority < 1)
-            throw new ArgumentOutOfRangeException($"minimum priority is {n} and maximum priority is 1");
+            throw new InvalidOperationException($"minimum priority is {n} and maximum priority is 1");
 
 
 
@@ -114,7 +114,7 @@ public class AdmissionService : IAdmissionService
             throw new KeyNotFoundException("Admission not found");
         
         if (admission.ManagerId.HasValue)
-            throw new Exception("admission already has manager");
+            throw new InvalidOperationException("admission already has manager");
         
         var checkFaculty = await _db.ManagerFaculties.FirstOrDefaultAsync(mf=>mf.ManagerId == dto.ManagerId);
         if(checkFaculty == null)
@@ -232,7 +232,7 @@ public class AdmissionService : IAdmissionService
         
         var n = _options.N;
         if (dto.Priority > n || dto.Priority < 1)
-            throw new ArgumentOutOfRangeException($"minimum priority is {n} and maximum priority is 1");
+            throw new InvalidOperationException($"minimum priority is {n} and maximum priority is 1");
         admission.Priority = dto.Priority;
         await _db.SaveChangesAsync();
         return AdmisisonMapper(admission);
@@ -255,6 +255,12 @@ public class AdmissionService : IAdmissionService
         await _publish.Publish(message);
         await _db.SaveChangesAsync();
         return AdmisisonMapper(admission);
+    }
+
+    public async Task<List<GetAdmissionDto>> GetAdmissionByApplicantId(Guid id)
+    {
+        var admissions =  await _db.Admissions.Where(x => x.ApplicantId == id).ToListAsync();
+        return AdmisisonMapper(admissions);
     }
     
     
