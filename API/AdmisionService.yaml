@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: AdmissionService API
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+tags:
+  - name: Applicant
+  - name: Manager
+paths:
+
+  /applicant/admissions:
+    post:
+      tags: [Applicant]
+      summary: Создать заявку на поступление
+      description: Абитуриент создает заявку на конкретную программу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - applicant_id
+                - faculty_id
+                - program_id
+              properties:
+                applicant_id:
+                  type: string
+                  format: uuid
+                faculty_id:
+                  type: string
+                  format: uuid
+                program_id:
+                  type: string
+                  format: uuid
+      responses:
+        "201":
+          description: Заявка создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "400":
+          description: |
+            Абитуриент уже имеет 5 заявок
+            Уровень программы не соответствует документу об образовании
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Достигнут лимит выбранных программ (максимум 5)"
+  /applicant/get/admissions:
+    get:
+      tags: [Applicant]
+      summary: Получить список заявок абитуриента
+      parameters:
+        - in: query
+          name: applicant_id
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Список заявок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Admission"
+
+  /applicant/admissions/{admissionId}/priority:
+    patch:
+      tags: [Applicant]
+      summary: Изменить приоритет программы
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - priority
+              properties:
+                priority:
+                  type: integer
+                  minimum: 1
+      responses:
+        "200":
+          description: Приоритет обновлен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "400":
+          description: Некорректное значение приоритета
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Приоритет должен быть положительным числом"
+
+  /applicant/admissions/{admissionId}:
+    delete:
+      tags: [Applicant]
+      summary: Удалить заявку
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      responses:
+        "204":
+          description: Заявка удалена
+
+  /manager/admissions:
+    get:
+      tags: [Manager]
+      summary: Получить список заявок
+      parameters:
+        - in: query
+          name: search
+          description: Поиск по имени абитуриента
+          schema:
+            type: string
+
+        - in: query
+          name: program_id
+          schema:
+            type: string
+            format: uuid
+
+        - in: query
+          name: faculty_id
+          schema:
+            type: string
+            format: uuid
+
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/AdmissionStatus"
+
+        - in: query
+          name: manager_id
+          schema:
+            type: string
+            format: uuid
+
+        - in: query
+          name: unassigned_only
+          schema:
+            type: boolean
+
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum:
+              - updated_at
+
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+
+      responses:
+        "200":
+          description: Список заявок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdmissionPage"
+        "400":
+          description: Некорректные параметры пагинации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Размер страницы должен быть от 1 до 100"
+                
+  /applicant/admission/{admissionId}:
+    get:
+      tags: [Applicant]
+      summary: Получить заявку по ID
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      responses:
+        "200":
+          description: Заявка найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "404":
+          description: Заявка не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Заявка не найдена"
+
+  /manager/admissions/{admissionId}/assign:
+    post:
+      tags: [Manager]
+      summary: Взять заявку
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - manager_id
+              properties:
+                manager_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Менеджер назначен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "400":
+          description: Заявка уже назначена другому менеджеру
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Заявка уже назначена менеджеру 123e4567-e89b-12d3-a456-426614174000"
+        "404":
+          description: Заявка не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Заявка не найдена"
+
+  /manager/admissions/{admissionId}/unassign:
+    post:
+      tags: [Manager]
+      summary: Отказаться от заявки
+      parameters:
+        - $ref: "#/components/parameters/admissionId"
+      responses:
+        "200":
+          description: Заявка возвращена в пул
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admission"
+        "400":
+          description: Вы не являетесь ответственным за эту заявку
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Вы не являетесь ответственным за эту заявку"
+        "404":
+          description: Заявка не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Заявка не найдена"
+
+  /manager/managers:
+    get:
+      tags: [Manager]
+      summary: Получить список менеджеров
+      responses:
+        "200":
+          description: Список менеджеров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Manager"
+
+components:
+
+  parameters:
+    admissionId:
+      name: admissionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    Admission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        applicant_id:
+          type: string
+          format: uuid
+        faculty_id:
+          type: string
+          format: uuid
+        program_id:
+          type: string
+          format: uuid
+        priority:
+          type: integer
+        manager_id:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: "#/components/schemas/AdmissionStatus"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AdmissionStatus:
+      type: string
+      enum:
+        - CREATED
+        - IN_REVIEW
+        - CONFIRMED
+        - CLOSED
+        - REJECTED
+
+    Manager:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    AdmissionPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Admission"
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer

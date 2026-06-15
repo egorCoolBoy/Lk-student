@@ -1,0 +1,509 @@
+openapi: 3.0.1
+info:
+  title: UserService API
+  version: 1.0.0
+servers:
+  - url: https://localhost:5000
+paths:
+  /api/Auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Регистрация
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmailExistsError'
+                  - $ref: '#/components/schemas/PasswordMismatchError'
+                  - $ref: '#/components/schemas/ValidationError'
+  
+  /api/Auth/register/manager:
+    post:
+      tags:
+        - Auth
+      summary: Регистрация менеджеров и главных менеджеров
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerRegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmailExistsError'
+                  - $ref: '#/components/schemas/PasswordMismatchError'
+                  - $ref: '#/components/schemas/ValidationError'
+  
+  /api/Auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Вход
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Ошибка входа
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidCredentialsError'
+                  - $ref: '#/components/schemas/UserNotFoundError'
+  
+  /api/Auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Обновить токены
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+        '401':
+          description: Ошибка обновления
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InvalidRefreshTokenError'
+                  - $ref: '#/components/schemas/RefreshTokenExpiredError'
+  
+  /api/Auth/change-password:
+    post:
+      tags:
+        - Auth
+      summary: Сменить пароль
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Ошибка смены пароля
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/IncorrectPasswordError'
+                  - $ref: '#/components/schemas/NewPasswordMismatchError'
+                  - $ref: '#/components/schemas/PasswordSameAsOldError'
+        '401':
+          description: Не авторизован
+  
+  /api/Auth/change-email:
+    post:
+      tags:
+        - Auth
+      summary: Сменить email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeEmailRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Ошибка смены email
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmailAlreadyExistsError'
+                  - $ref: '#/components/schemas/IncorrectPasswordError'
+                  - $ref: '#/components/schemas/SameEmailError'
+        '401':
+          description: Не авторизован
+  
+  /api/Auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Выйти
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Не авторизован
+  
+  /api/Auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Информация о текущем пользователе
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '401':
+          description: Не авторизован
+  
+  /api/Auth/users/emails:
+    post:
+      tags:
+        - Auth
+      summary: Получить email-адреса пользователей для отправки уведомлений
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                format: uuid
+                description: ID пользователя
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                  format: email
+                  description: Email адрес пользователя
+              example:
+                "123e4567-e89b-12d3-a456-426614174000": "user1@example.com"
+                "987fcdeb-51a2-43b7-89c0-123456789abc": "user2@example.com"
+        '400':
+          description: Пустой список или некорректные ID
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EmptyListError'
+                  - $ref: '#/components/schemas/InvalidUserIdError'
+        '401':
+          description: Не авторизован
+        '404':
+          description: Некоторые пользователи не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersNotFoundError'
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - confirmPassword
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 6
+        confirmPassword:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [Abiturient, Manager, HeadManager]
+    
+    ManagerRegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - confirmPassword
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email сотрудника
+        password:
+          type: string
+          format: password
+          minLength: 6
+        confirmPassword:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [Manager, HeadManager]
+          description: Роль сотрудника (только Manager или HeadManager)
+    
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+    
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+        - confirmNewPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 6
+        confirmNewPassword:
+          type: string
+          format: password
+    
+    ChangeEmailRequest:
+      type: object
+      required:
+        - newEmail
+        - password
+      properties:
+        newEmail:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+  
+    RegistrationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID созданного пользователя
+      required:
+        - id
+    
+    LoginResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        role:
+          type: string
+          enum: [Abiturient, Manager, HeadManager]
+          description: Роль пользователя
+        accessToken:
+          type: string
+          description: JWT access токен
+        refreshToken:
+          type: string
+          description: Refresh токен для обновления access токена
+      required:
+        - id
+        - email
+        - role
+        - accessToken
+        - refreshToken
+    
+    RefreshTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Новый JWT access токен
+        refreshToken:
+          type: string
+          description: Новый refresh токен
+      required:
+        - accessToken
+        - refreshToken
+    
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [Abiturient, Manager, HeadManager]
+    
+    EmailExistsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Пользователь с таким email уже существует"
+    
+    PasswordMismatchError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Пароли не совпадают"
+    
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Некорректные данные"
+    
+    InvalidCredentialsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Неверный пароль"
+    
+    UserNotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Пользователь не найден"
+    
+    InvalidRefreshTokenError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Недействительный refresh токен"
+    
+    RefreshTokenExpiredError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Refresh токен истек"
+    
+    IncorrectPasswordError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Неверный текущий пароль"
+    
+    NewPasswordMismatchError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Новый пароль и подтверждение не совпадают"
+    
+    PasswordSameAsOldError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Новый пароль совпадает со старым"
+    
+    EmailAlreadyExistsError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Этот email уже занят"
+    
+    SameEmailError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Новый email совпадает с текущим"
+    
+    EmptyListError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Список ID не может быть пустым"
+    
+    InvalidUserIdError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Некорректный формат ID пользователя"
+    
+    UsersNotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Некоторые пользователи не найдены"
