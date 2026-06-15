@@ -23,7 +23,7 @@ public class EducationScanDto
 public class DownloadedFileDto
 {
     public Stream Content { get; init; } = null!;
-    public string ContentType { get; init; } = "application/octet-stream";
+    public string ContentType { get; init; } 
     public string FileName { get; init; } = null!;
 }
 
